@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오르다 - Sector</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* 사이드바 */
+        .sidebar {
+            width: 260px;
+            background: white;
+            border-right: 1px solid #e9ecef;
+            padding: 0;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+        }
+        
+        .logo-section {
+            background: linear-gradient(135deg, #FF6B6B 0%, #FF5252 100%);
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .logo-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .nav-menu {
+            padding: 1.5rem 0;
+        }
+        
+        .nav-item {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        
+        .nav-item:hover {
+            background-color: #f8f9fa;
+            border-left-color: #FF6B6B;
+        }
+        
+        .nav-item.active {
+            background-color: #fff3f3;
+            border-left-color: #FF6B6B;
+            color: #FF6B6B;
+            font-weight: 600;
+        }
+        
+        .nav-icon {
+            font-size: 1.1rem;
+            width: 20px;
+        }
+        
+        /* 메인 콘텐츠 */
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+        
+        /* 페이지 헤더 */
+        .page-header {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .breadcrumb {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        
+        .page-subtitle {
+            color: #6c757d;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+        
+        /* 섹터 검색 */
+        .search-section {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .search-box {
+            position: relative;
+            max-width: 400px;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 0.8rem 1rem 0.8rem 2.5rem;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #FF6B6B;
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 0.8rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+        }
+        
+        /* 섹터 그리드 */
+        .sectors-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 1.5rem;
+        }
+        
+        .sectors-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .sector-card {
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .sector-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+            border-color: #FF6B6B;
+        }
+        
+        .sector-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .sector-card:hover::before {
+            opacity: 1;
+        }
+        
+        .sector-tech::before { background: linear-gradient(90deg, #74b9ff, #0984e3); }
+        .sector-finance::before { background: linear-gradient(90deg, #a8e6cf, #56ca85); }
+        .sector-energy::before { background: linear-gradient(90deg, #ffeaa7, #fdcb6e); }
+        .sector-healthcare::before { background: linear-gradient(90deg, #fd79a8, #e84393); }
+        .sector-consumer::before { background: linear-gradient(90deg, #fab1a0, #e17055); }
+        .sector-materials::before { background: linear-gradient(90deg, #c7ecee, #81ecec); }
+        
+        .sector-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .sector-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            font-size: 1.5rem;
+        }
+        
+        .sector-tech .sector-icon { background: #e3f2fd; }
+        .sector-finance .sector-icon { background: #e8f5e8; }
+        .sector-energy .sector-icon { background: #fff3e0; }
+        .sector-healthcare .sector-icon { background: #fce4ec; }
+        .sector-consumer .sector-icon { background: #fff8e1; }
+        .sector-materials .sector-icon { background: #e0f2f1; }
+        
+        .sector-info {
+            flex: 1;
+        }
+        
+        .sector-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 0.3rem;
+        }
+        
+        .sector-count {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        .sector-description {
+            color: #6c757d;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+        
+        .sector-stats {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .stat-item {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .stat-value {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-top: 0.2rem;
+        }
+        
+        .sector-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .action-btn {
+            padding: 0.6rem 1rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #FF6B6B 0%, #FF5252 100%);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #495057;
+            border: 1px solid #e9ecef;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-1px);
+        }
+        
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .layout {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                order: 2;
+            }
+            
+            .main-content {
+                order: 1;
+                padding: 1rem;
+            }
+            
+            .sectors-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <!-- 사이드바 -->
+        <div class="sidebar">
+            <div class="logo-section">
+                <div class="logo">오르다</div>
+                <div class="logo-subtitle">투자 학습 플랫폼</div>
+            </div>
+            <div class="nav-menu">
+                <div class="nav-item" onclick="navigateTo('home')">
+                    <span class="nav-icon">🏠</span>
+                    <span>Home</span>
+                </div>
+                <div class="nav-item" onclick="navigateTo('news')">
+                    <span class="nav-icon">📰</span>
+                    <span>News</span>
+                </div>
+                <div class="nav-item active" onclick="navigateTo('sector')">
+                    <span class="nav-icon">🏭</span>
+                    <span>Sector</span>
+                </div>
+                <div class="nav-item" onclick="navigateTo('company')">
+                    <span class="nav-icon">🏢</span>
+                    <span>Company</span>
+                </div>
+                <div class="nav-item" onclick="navigateTo('mock-invest')">
+                    <span class="nav-icon">📈</span>
+                    <span>Mock Invest</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 메인 콘텐츠 -->
+        <div class="main-content">
+            <!-- 페이지 헤더 -->
+            <div class="page-header">
+                <div class="breadcrumb">Home → Sector</div>
+                <h1 class="page-title">🏭 산업 분석</h1>
+                <p class="page-subtitle">
+                    KRX 기준 산업 분류별로 관련 이슈와 투자 흐름을 분석해보세요
+                </p>
+            </div>
+            
+            <!-- 검색 섹션 -->
+            <div class="search-section">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" class="search-input" placeholder="산업명, 키워드로 검색..." id="sector-search">
+                </div>
+            </div>
+            
+            <!-- 섹터 목록 -->
+            <div class="sectors-section">
+                <h2 class="section-title">주요 산업 분류</h2>
+                <div class="sectors-grid" id="sectors-container">
+                    <!-- 섹터 카드들이 여기에 동적으로 추가됩니다 -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 섹터 데이터 (KRX 산업분류 기반)
+        const sectorsData = [
+            {
+                id: 'tech',
+                name: 'IT 서비스',
+                description: '컴퓨터 소프트웨어 개발, 시스템 통합, 정보기술 서비스 등을 제공하는 산업',
+                icon: '💻',
+                companies: 245,
+                recentIssues: 3,
+                monthlyReturn: '+2.5%',
+                className: 'sector-tech'
+            },
+            {
+                id: 'finance',
+                name: '금융업',
+                description: '은행, 증권, 보험, 자산운용 등 금융 서비스를 제공하는 산업',
+                icon: '🏦',
+                companies: 89,
+                recentIssues: 5,
+                monthlyReturn: '+1.2%',
+                className: 'sector-finance'
+            },
+            {
+                id: 'energy',
+                name: '정유',
+                description: '원유 정제, 석유화학 제품 생산 및 유통 관련 산업',
+                icon: '⛽',
+                companies: 34,
+                recentIssues: 8,
+                monthlyReturn: '+4.1%',
+                className: 'sector-energy'
+            },
+            {
+                id: 'healthcare',
+                name: '의료·정밀기기',
+                description: '의료기기, 정밀기기, 바이오 관련 제품을 제조하는 산업',
+                icon: '🏥',
+                companies: 156,
+                recentIssues: 4,
+                monthlyReturn: '+3.8%',
+                className: 'sector-healthcare'
+            },
+            {
+                id: 'consumer',
+                name: '음식료·담배',
+                description: '식품, 음료, 담배 등 소비재를 제조하는 산업',
+                icon: '🍽️',
+                companies: 67,
+                recentIssues: 2,
+                monthlyReturn: '+0.8%',
+                className: 'sector-consumer'
+            },
+            {
+                id: 'materials',
+                name: '화학',
+                description: '기초 화학물질, 정밀화학, 플라스틱 등 화학 제품 관련 산업',
+                icon: '🧪',
+                companies: 98,
+                recentIssues: 6,
+                monthlyReturn: '+2.9%',
+                className: 'sector-materials'
+            },
+            {
+                id: 'semiconductors',
+                name: '반도체',
+                description: '메모리, 시스템반도체, 반도체 장비 등 반도체 관련 산업',
+                icon: '📱',
+                companies: 45,
+                recentIssues: 12,
+                monthlyReturn: '+5.2%',
+                className: 'sector-tech'
+            },
+            {
+                id: 'defense',
+                name: '방위산업',
+                description: '방위산업 관련 장비, 무기체계, 항공우주 등을 제조하는 산업',
+                icon: '🛡️',
+                companies: 23,
+                recentIssues: 7,
+                monthlyReturn: '+6.3%',
+                className: 'sector-materials'
+            },
+            {
+                id: 'automotive',
+                name: '운송장비·부품',
+                description: '자동차, 조선, 항공기 등 운송장비 및 관련 부품 제조업',
+                icon: '🚗',
+                companies: 87,
+                recentIssues: 5,
+                monthlyReturn: '+1.7%',
+                className: 'sector-consumer'
+            }
+        ];
+
+        // 페이지 로드 시 실행
+        document.addEventListener('DOMContentLoaded', function() {
+            displaySectors(sectorsData);
+            setupEventListeners();
+        });
+
+        // 이벤트 리스너 설정
+        function setupEventListeners() {
+            // 검색 기능
+            document.getElementById('sector-search').addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                const filteredSectors = sectorsData.filter(sector => 
+                    sector.name.toLowerCase().includes(searchTerm) ||
+                    sector.description.toLowerCase().includes(searchTerm)
+                );
+                displaySectors(filteredSectors);
+            });
+        }
+
+        // 섹터 표시
+        function displaySectors(sectors) {
+            const container = document.getElementById('sectors-container');
+            container.innerHTML = '';
+
+            sectors.forEach(sector => {
+                container.appendChild(createSectorCard(sector));
+            });
+        }
+
+        // 섹터 카드 생성
+        function createSectorCard(sector) {
+            const card = document.createElement('div');
+            card.className = `sector-card ${sector.className}`;
+            card.innerHTML = `
+                <div class="sector-header">
+                    <div class="sector-icon">${sector.icon}</div>
+                    <div class="sector-info">
+                        <div class="sector-name">${sector.name}</div>
+                        <div class="sector-count">${sector.companies}개 기업</div>
+                    </div>
+                </div>
+                <div class="sector-description">${sector.description}</div>
+                <div class="sector-stats">
+                    <div class="stat-item">
+                        <div class="stat-value">${sector.recentIssues}</div>
+                        <div class="stat-label">최근 이슈</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${sector.monthlyReturn}</div>
+                        <div class="stat-label">월간 수익률</div>
+                    </div>
+                </div>
+                <div class="sector-actions">
+                    <button class="action-btn btn-primary" onclick="analyzeSector('${sector.id}')">
+                        📊 분석하기
+                    </button>
+                    <button class="action-btn btn-secondary" onclick="viewCompanies('${sector.id}')">
+                        🏢 기업보기
+                    </button>
+                </div>
+            `;
+            return card;
+        }
+
+        // 섹터 분석
+        function analyzeSector(sectorId) {
+            const sector = sectorsData.find(s => s.id === sectorId);
+            
+            // 섹터 분석 페이지로 이동
+            const params = new URLSearchParams({
+                sector_id: sectorId,
+                sector_name: sector.name,
+                source: 'sector'
+            });
+            
+            // 실제 분석 페이지로 이동 (향후 구현 예정)
+            // window.location.href = `sector-analysis.html?${params.toString()}`;
+            
+            // 임시로 회사 페이지로 이동
+            window.location.href = `company.html?sector=${encodeURIComponent(sector.name)}&from=sector`;
+        }
+
+        // 기업 목록 보기
+        function viewCompanies(sectorId) {
+            const sector = sectorsData.find(s => s.id === sectorId);
+            
+            // 기업 페이지로 섹터 필터와 함께 이동
+            const params = new URLSearchParams({
+                sector: sector.name,
+                from: 'sector'
+            });
+            
+            window.location.href = `company.html?${params.toString()}`;
+        }
+
+        // 페이지 네비게이션
+        function navigateTo(page) {
+            const pages = {
+                'home': '/static/index.html',
+                'news': '/static/news.html', 
+                'sector': '/static/sector.html',
+                'company': '/static/company.html',
+                'mock-invest': '/static/mock-invest.html'
+            };
+            
+            if (page !== 'sector') {
+                window.location.href = pages[page];
+            }
+        }
+    </script>
+</body>
+</html>

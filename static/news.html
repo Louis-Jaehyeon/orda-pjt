@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오르다 - News</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* 사이드바 */
+        .sidebar {
+            width: 260px;
+            background: white;
+            border-right: 1px solid #e9ecef;
+            padding: 0;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+        }
+        
+        .logo-section {
+            background: linear-gradient(135deg, #FF6B6B 0%, #FF5252 100%);
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .logo-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .nav-menu {
+            padding: 1.5rem 0;
+        }
+        
+        .nav-item {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        
+        .nav-item:hover {
+            background-color: #f8f9fa;
+            border-left-color: #FF6B6B;
+        }
+        
+        .nav-item.active {
+            background-color: #fff3f3;
+            border-left-color: #FF6B6B;
+            color: #FF6B6B;
+            font-weight: 600;
+        }
+        
+        .nav-icon {
+            font-size: 1.1rem;
+            width: 20px;
+        }
+        
+        /* 메인 콘텐츠 */
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+        
+        /* 페이지 헤더 */
+        .page-header {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .breadcrumb {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        
+        .page-subtitle {
+            color: #6c757d;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+        
+        /* 검색 및 필터 */
+        .search-filter-section {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .search-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .search-box {
+            flex: 1;
+            min-width: 300px;
+            position: relative;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 0.8rem 1rem 0.8rem 2.5rem;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #FF6B6B;
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 0.8rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+        }
+        
+        .filter-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .filter-btn {
+            padding: 0.6rem 1.2rem;
+            border: 2px solid #e9ecef;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        
+        .filter-btn:hover {
+            border-color: #FF6B6B;
+        }
+        
+        .filter-btn.active {
+            background: #FF6B6B;
+            color: white;
+            border-color: #FF6B6B;
+        }
+        
+        /* 뉴스 목록 */
+        .news-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .view-toggle {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .view-btn {
+            padding: 0.5rem;
+            border: 1px solid #e9ecef;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .view-btn.active {
+            background: #FF6B6B;
+            color: white;
+            border-color: #FF6B6B;
+        }
+        
+        /* 뉴스 아이템 (리스트 뷰) */
+        .news-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .news-item {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            gap: 1.5rem;
+        }
+        
+        .news-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            border-color: #FF6B6B;
+        }
+        
+        .news-content {
+            flex: 1;
+        }
+        
+        .news-meta {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 0.8rem;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
+        .news-date {
+            background: #f8f9fa;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+        }
+        
+        .news-source {
+            color: #495057;
+            font-weight: 500;
+        }
+        
+        .news-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.8rem;
+            line-height: 1.4;
+            color: #2c3e50;
+        }
+        
+        .news-summary {
+            color: #6c757d;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+        
+        .news-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .action-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-analyze {
+            background: linear-gradient(135deg, #FF6B6B 0%, #FF5252 100%);
+            color: white;
+        }
+        
+        .btn-bookmark {
+            background: #f8f9fa;
+            color: #495057;
+            border: 1px solid #e9ecef;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-1px);
+        }
+        
+        /* 뉴스 그리드 뷰 */
+        .news-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .news-card {
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .news-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+            border-color: #FF6B6B;
+        }
+        
+        /* 페이지네이션 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+        }
+        
+        .page-btn {
+            padding: 0.6rem 1rem;
+            border: 1px solid #e9ecef;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .page-btn:hover {
+            border-color: #FF6B6B;
+        }
+        
+        .page-btn.active {
+            background: #FF6B6B;
+            color: white;
+            border-color: #FF6B6B;
+        }
+        
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .layout {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                order: 2;
+            }
+            
+            .main-content {
+                order: 1;
+                padding: 1rem;
+            }
+            
+            .search-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .news-item {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <!-- 사이드바 -->
+        <div class="sidebar">
+            <div class="logo-section">
+                <div class="logo">오르다</div>
+                <div class="logo-subtitle">투자 학습 플랫폼</div>
+            </div>
+            <div class="nav-menu">
+                <div class="nav-item" onclick="navigateTo('home')">
+                    <span class="nav-icon">🏠</span>
+                    <span>Home</span>
+                </div>
+                <div class="nav-item active" onclick="navigateTo('news')">
+                    <span class="nav-icon">📰</span>
+                    <span>News</span>
+                </div>
+                <div class="nav-item" onclick="navigateTo('sector')">
+                    <span class="nav-icon">🏭</span>
+                    <span>Sector</span>
+                </div>
+                <div class="nav-item" onclick="navigateTo('company')">
+                    <span class="nav-icon">🏢</span>
+                    <span>Company</span>
+                </div>
+                <div class="nav-item" onclick="navigateTo('mock-invest')">
+                    <span class="nav-icon">📈</span>
+                    <span>Mock Invest</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 메인 콘텐츠 -->
+        <div class="main-content">
+            <!-- 페이지 헤더 -->
+            <div class="page-header">
+                <div class="breadcrumb">Home → News</div>
+                <h1 class="page-title">📰 뉴스 분석</h1>
+                <p class="page-subtitle">
+                    과거와 현재 뉴스를 분석하여 투자 인사이트를 얻어보세요
+                </p>
+            </div>
+            
+            <!-- 검색 및 필터 -->
+            <div class="search-filter-section">
+                <div class="search-controls">
+                    <div class="search-box">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" class="search-input" placeholder="뉴스 제목, 내용, 키워드 검색...">
+                    </div>
+                    <div class="filter-buttons">
+                        <button class="filter-btn active">전체</button>
+                        <button class="filter-btn">오늘</button>
+                        <button class="filter-btn">이번 주</button>
+                        <button class="filter-btn">이번 달</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 뉴스 목록 -->
+            <div class="news-section">
+                <div class="section-header">
+                    <h2 class="section-title">뉴스 목록</h2>
+                    <div class="view-toggle">
+                        <button class="view-btn active" onclick="switchView('list')">📋</button>
+                        <button class="view-btn" onclick="switchView('grid')">⊞</button>
+                    </div>
+                </div>
+                
+                <div class="news-list" id="news-container">
+                    <!-- 뉴스 아이템들이 여기에 동적으로 추가됩니다 -->
+                </div>
+                
+                <!-- 페이지네이션 -->
+                <div class="pagination">
+                    <button class="page-btn">‹</button>
+                    <button class="page-btn active">1</button>
+                    <button class="page-btn">2</button>
+                    <button class="page-btn">3</button>
+                    <button class="page-btn">›</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 실제 SQLite 데이터베이스에서 가져온 과거 뉴스 데이터
+        let newsData = [];
+        let allNewsData = []; // 전체 데이터 백업
+        let currentView = 'list';
+        let currentFilter = '전체';
+
+        // 페이지 로드 시 실행
+        document.addEventListener('DOMContentLoaded', function() {
+            loadRealNewsFromDatabase();
+            setupEventListeners();
+        });
+
+        // SQLite 데이터베이스에서 실제 과거 뉴스 로드
+        async function loadRealNewsFromDatabase() {
+            console.log('🗄️ SQLite에서 Past_news.csv 실제 데이터 로딩 중...');
+            
+            try {
+                showLoadingState();
+                
+                // 실제 데이터베이스 API 호출 (/api/past-news)
+                const response = await fetch('/api/past-news?limit=50');
+                console.log('📡 Past News API 응답 상태:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const result = await response.json();
+                console.log('📊 Past News API 응답 데이터:', result);
+                
+                if (result.success && result.data && Array.isArray(result.data)) {
+                    // API에서 가져온 실제 데이터를 news.html 형식에 맞게 변환
+                    newsData = result.data.map(item => ({
+                        id: item.id,
+                        title: item.title,
+                        summary: item.summary || item.content?.substring(0, 200) + "...",
+                        content: item.content,
+                        related_industries: item.related_industries,
+                        industry_reason: item.industry_reason,
+                        start_date: item.start_date,
+                        end_date: item.end_date,
+                        source: item.source || "과거 이슈",
+                        date: item.start_date,
+                        type: "과거 이슈",
+                        // 추가 정보
+                        detailed_content: item.content, // Contentes(Spec) 내용
+                        evidence_source: item.evidence_source || item.source
+                    }));
+                    
+                    allNewsData = [...newsData]; // 전체 데이터 백업
+                    
+                    console.log(`✅ SQLite DB에서 ${newsData.length}개 실제 과거 이슈 로드 완료`);
+                    
+                    // 데이터 표시
+                    hideLoadingState();
+                    displayNews(newsData);
+                    
+                    // 성공 알림
+                    showNotification(`✅ Past_news.csv에서 ${newsData.length}개 실제 과거 이슈를 가져왔습니다!`, 'success');
+                    
+                    // 페이지 제목 업데이트
+                    updatePageHeader(result.total, false);
+                    
+                    // 산업별 필터 버튼 업데이트
+                    updateIndustryFilters();
+                    
+                } else {
+                    throw new Error('Past News API 응답 형식이 올바르지 않습니다.');
+                }
+                
+            } catch (error) {
+                console.error('❌ 실제 과거 뉴스 데이터 로드 실패:', error);
+                
+                // 폴백: 더미 데이터 사용
+                newsData = getFallbackDummyNews();
+                allNewsData = [...newsData];
+                hideLoadingState();
+                displayNews(newsData);
+                
+                // 에러 알림
+                showNotification('⚠️ 데이터베이스 연결에 실패하여 샘플 데이터를 표시합니다.', 'warning');
+                updatePageHeader(newsData.length, true);
+            }
+        }
+
+        // 로딩 상태 표시
+        function showLoadingState() {
+            const container = document.getElementById('news-container');
+            container.innerHTML = `
+                <div style="text-align: center; padding: 3rem; color: #6c757d;">
+                    <div style="border: 4px solid #f3f3f3; border-top: 4px solid #FF6B6B; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div>
+                    <p>🗄️ Past_news.csv에서 실제 과거 이슈를 불러오는 중...</p>
+                    <small style="color: #999;">SQLite 데이터베이스 연결 중</small>
+                </div>
+                <style>
+                    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+                </style>
+            `;
+        }
+
+        // 로딩 상태 숨기기
+        function hideLoadingState() {
+            // displayNews에서 자동으로 처리됨
+        }
+
+        // 페이지 헤더 업데이트
+        function updatePageHeader(count, isOffline = false) {
+            const subtitle = document.querySelector('.page-subtitle');
+            if (subtitle) {
+                const source = isOffline ? '샘플 데이터' : 'Past_news.csv (SQLite DB)';
+                const dataInfo = isOffline ? '' : '<br><small style="color: #666;">📁 실제 CSV 파일에서 가져온 과거 투자 이슈들</small>';
+                
+                subtitle.innerHTML = `
+                    과거와 현재 뉴스를 분석하여 투자 인사이트를 얻어보세요<br>
+                    <small style="color: #28a745; font-weight: 600;">
+                        📊 ${source}에서 ${count}개 과거 이슈 로드 완료
+                    </small>
+                    ${dataInfo}
+                `;
+            }
+        }
+
+        // 산업별 필터 버튼 업데이트
+        function updateIndustryFilters() {
+            // 실제 데이터에서 관련 산업 추출
+            const industries = new Set();
+            newsData.forEach(news => {
+                if (news.related_industries) {
+                    // "건설, 화학, 금속" 형태를 쉼표로 분리
+                    news.related_industries.split(',').forEach(industry => {
+                        const trimmed = industry.trim();
+                        if (trimmed) industries.add(trimmed);
+                    });
+                }
+            });
+            
+            console.log('📊 추출된 관련 산업들:', Array.from(industries));
+            
+            // 동적으로 산업 필터 버튼 생성 (선택사항)
+            // 여기서는 기존 필터 버튼을 그대로 사용
+        }
+
+        // 검색 기능 (데이터베이스 연동)
+        async function searchNewsInDatabase(searchTerm) {
+            if (!searchTerm.trim()) {
+                // 검색어가 없으면 전체 데이터 표시
+                newsData = [...allNewsData];
+                displayNews(newsData);
+                return;
+            }
+
+            try {
+                console.log(`🔍 데이터베이스에서 검색: "${searchTerm}"`);
+                
+                const response = await fetch(`/api/past-news?search=${encodeURIComponent(searchTerm)}&limit=50`);
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    // 검색 결과를 표시 형식으로 변환
+                    newsData = result.data.map(item => ({
+                        id: item.id,
+                        title: item.title,
+                        summary: item.summary || item.content?.substring(0, 200) + "...",
+                        content: item.content,
+                        related_industries: item.related_industries,
+                        industry_reason: item.industry_reason,
+                        start_date: item.start_date,
+                        end_date: item.end_date,
+                        source: item.source || "과거 이슈",
+                        date: item.start_date,
+                        type: "과거 이슈"
+                    }));
+                    
+                    displayNews(newsData);
+                    
+                    if (newsData.length === 0) {
+                        showNotification(`"${searchTerm}"에 대한 검색 결과가 없습니다.`, 'info');
+                    } else {
+                        showNotification(`"${searchTerm}" 검색 결과: ${newsData.length}개`, 'success');
+                    }
+                }
+                
+            } catch (error) {
+                console.error('❌ 데이터베이스 검색 실패:', error);
+                
+                // 폴백: 클라이언트 측 검색
+                const filteredNews = allNewsData.filter(news => 
+                    news.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    news.summary.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    (news.content && news.content.toLowerCase().includes(searchTerm.toLowerCase()))
+                );
+                newsData = filteredNews;
+                displayNews(newsData);
+                showNotification(`클라이언트 검색 결과: ${newsData.length}개`, 'warning');
+            }
+        }
+
+        // 산업별 필터링 (데이터베이스 연동)
+        async function filterByIndustry(industry) {
+            if (!industry || industry === '전체') {
+                newsData = [...allNewsData];
+                displayNews(newsData);
+                return;
+            }
+
+            try {
+                console.log(`🏭 산업별 필터링: "${industry}"`);
+                
+                const response = await fetch(`/api/past-news?industry=${encodeURIComponent(industry)}&limit=50`);
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    newsData = result.data.map(item => ({
+                        id: item.id,
+                        title: item.title,
+                        summary: item.summary || item.content?.substring(0, 200) + "...",
+                        content: item.content,
+                        related_industries: item.related_industries,
+                        industry_reason: item.industry_reason,
+                        start_date: item.start_date,
+                        end_date: item.end_date,
+                        source: item.source || "과거 이슈",
+                        date: item.start_date,
+                        type: "과거 이슈"
+                    }));
+                    
+                    displayNews(newsData);
+                    showNotification(`"${industry}" 관련 이슈: ${newsData.length}개`, 'success');
+                }
+                
+            } catch (error) {
+                console.error('❌ 산업별 필터링 실패:', error);
+                
+                // 폴백: 클라이언트 측 필터링
+                const filteredNews = allNewsData.filter(news => 
+                    news.related_industries && 
+                    news.related_industries.toLowerCase().includes(industry.toLowerCase())
+                );
+                newsData = filteredNews;
+                displayNews(newsData);
+                showNotification(`클라이언트 필터링 결과: ${newsData.length}개`, 'warning');
+            }
+        }
+
+        // 이벤트 리스너 설정
+        function setupEventListeners() {
+            // 검색 기능
+            const searchInput = document.querySelector('.search-input');
+            let searchTimeout;
+            
+            if (searchInput) {
+                searchInput.addEventListener('input', function(e) {
+                    const searchTerm = e.target.value;
+                    
+                    // 디바운싱: 500ms 후에 검색 실행
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        searchNewsInDatabase(searchTerm);
+                    }, 500);
+                });
+            }
+
+            // 필터 버튼들
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentFilter = this.textContent.trim();
+                    
+                    if (currentFilter === '전체') {
+                        newsData = [...allNewsData];
+                        displayNews(newsData);
+                    } else {
+                        filterNewsByPeriod();
+                    }
+                });
+            });
+        }
+
+        // 기간별 필터링 (클라이언트 측)
+        function filterNewsByPeriod() {
+            let filteredNews = [...allNewsData];
+            
+            if (currentFilter !== '전체') {
+                const today = new Date();
+                
+                switch(currentFilter) {
+                    case '오늘':
+                        // 과거 이슈에는 '오늘' 데이터가 없으므로 빈 결과
+                        filteredNews = [];
+                        break;
+                    case '이번 주':
+                        // 최근 일주일 내 이슈 없음 (모두 과거 데이터)
+                        filteredNews = [];
+                        break;
+                    case '이번 달':
+                        // 이번 달 이슈 없음 (모두 과거 데이터)
+                        filteredNews = [];
+                        break;
+                }
+            }
+            
+            newsData = filteredNews;
+            displayNews(newsData);
+        }
+
+        // 뉴스 표시
+        function displayNews(news) {
+            const container = document.getElementById('news-container');
+            container.innerHTML = '';
+            container.className = currentView === 'list' ? 'news-list' : 'news-grid';
+
+            if (news.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 3rem; color: #6c757d;">
+                        <h3>📭 해당 조건에 맞는 과거 이슈가 없습니다</h3>
+                        <p>다른 검색어나 필터를 시도해보세요.</p>
+                        <button onclick="loadRealNewsFromDatabase()" class="btn" style="margin-top: 1rem; padding: 0.8rem 1.5rem; background: #FF6B6B; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                            🔄 전체 데이터 다시 로드
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            news.forEach(item => {
+                if (currentView === 'list') {
+                    container.appendChild(createNewsListItem(item));
+                } else {
+                    container.appendChild(createNewsCardItem(item));
+                }
+            });
+        }
+
+        // 리스트 뷰 아이템 생성 (실제 데이터 반영)
+        function createNewsListItem(news) {
+            const item = document.createElement('div');
+            item.className = 'news-item';
+            
+            // 날짜 포맷팅
+            const dateInfo = formatDatePeriod(news.start_date, news.end_date);
+            
+            item.innerHTML = `
+                <div class="news-content">
+                    <div class="news-meta">
+                        <div class="news-date">${dateInfo}</div>
+                        <div class="news-source">${news.source}</div>
+                        ${news.related_industries ? `<div class="news-industry" style="background: #e3f2fd; color: #1976d2; padding: 0.2rem 0.5rem; border-radius: 10px; font-size: 0.8rem;">🏭 ${news.related_industries}</div>` : ''}
+                    </div>
+                    <h3 class="news-title">${news.title}</h3>
+                    <p class="news-summary">${news.summary}</p>
+                    
+                    ${news.industry_reason ? `
+                        <div style="background: #f8f9fa; padding: 0.8rem; border-radius: 6px; margin: 0.5rem 0; font-size: 0.9rem; color: #495057;">
+                            <strong>📊 산업 영향 분석:</strong><br>
+                            ${news.industry_reason}
+                        </div>
+                    ` : ''}
+                    
+                    ${news.evidence_source ? `
+                        <div style="background: #fff3cd; padding: 0.5rem; border-radius: 4px; margin: 0.5rem 0; font-size: 0.8rem; color: #856404;">
+                            <strong>📋 근거자료:</strong> ${news.evidence_source}
+                        </div>
+                    ` : ''}
+                    
+                    <div class="news-actions">
+                        <button class="action-btn btn-analyze" onclick="analyzeNews('${news.id}')">
+                            🔍 상세 분석
+                        </button>
+                        <button class="action-btn btn-bookmark" onclick="bookmarkNews('${news.id}')">
+                            ⭐ 즐겨찾기
+                        </button>
+                        ${news.related_industries ? `<button class="action-btn btn-secondary" onclick="filterByIndustry('${news.related_industries.split(',')[0].trim()}')" style="background: #17a2b8; color: white;">🏭 관련 산업</button>` : ''}
+                        <button class="action-btn btn-info" onclick="showDetailedContent('${news.id}')" style="background: #6f42c1; color: white;">📄 전체 내용</button>
+                    </div>
+                </div>
+            `;
+            return item;
+        }
+
+        // 그리드 뷰 아이템 생성
+        function createNewsCardItem(news) {
+            const item = document.createElement('div');
+            item.className = 'news-card';
+            
+            const dateInfo = formatDatePeriod(news.start_date, news.end_date);
+            
+            item.innerHTML = `
+                <div class="news-meta">
+                    <div class="news-date">${dateInfo}</div>
+                    <div class="news-source">${news.source}</div>
+                </div>
+                <h3 class="news-title">${news.title}</h3>
+                <p class="news-summary">${news.summary}</p>
+                ${news.related_industries ? `<div style="background: #e3f2fd; color: #1976d2; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.8rem; margin: 0.5rem 0; display: inline-block;">🏭 ${news.related_industries}</div>` : ''}
+                <div class="news-actions">
+                    <button class="action-btn btn-analyze" onclick="analyzeNews('${news.id}')">
+                        🔍 분석
+                    </button>
+                    <button class="action-btn btn-bookmark" onclick="bookmarkNews('${news.id}')">
+                        ⭐ 즐겨찾기
+                    </button>
+                </div>
+            `;
+            return item;
+        }
+
+        // 날짜 기간 포맷팅
+        function formatDatePeriod(startDate, endDate) {
+            if (!startDate) return '날짜 미상';
+            
+            try {
+                const start = formatDateKorean(startDate);
+                const end = endDate ? formatDateKorean(endDate) : null;
+                
+                if (end && end !== start) {
+                    return `${start} ~ ${end}`;
+                } else {
+                    return start;
+                }
+            } catch (e) {
+                return startDate;
+            }
+        }
+
+        // 한국어 날짜 포맷팅
+        function formatDateKorean(dateString) {
+            if (!dateString) return '날짜 미상';
+            
+            try {
+                // "Jan-21" 형태를 "2021년 1월"로 변환
+                if (dateString.includes('-')) {
+                    const [month, year] = dateString.split('-');
+                    const monthNames = {
+                        'Jan': '1월', 'Feb': '2월', 'Mar': '3월', 'Apr': '4월',
+                        'May': '5월', 'Jun': '6월', 'Jul': '7월', 'Aug': '8월',
+                        'Sep': '9월', 'Oct': '10월', 'Nov': '11월', 'Dec': '12월'
+                    };
+                    const fullYear = year.length === 2 ? `20${year}` : year;
+                    return `${fullYear}년 ${monthNames[month] || month}`;
+                }
+                
+                // 기타 형태는 그대로 반환
+                return dateString;
+            } catch (e) {
+                return dateString;
+            }
+        }
+
+        // 상세 내용 표시
+        function showDetailedContent(newsId) {
+            const news = newsData.find(n => n.id === newsId);
+            
+            if (!news) {
+                showNotification('선택한 뉴스를 찾을 수 없습니다.', 'error');
+                return;
+            }
+            
+            // 모달 창으로 상세 내용 표시
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                background: rgba(0,0,0,0.7); z-index: 2000; 
+                display: flex; align-items: center; justify-content: center;
+            `;
+            
+            modal.innerHTML = `
+                <div style="background: white; max-width: 800px; max-height: 80vh; overflow-y: auto; 
+                            padding: 2rem; border-radius: 12px; margin: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h2 style="margin: 0; color: #333;">${news.title}</h2>
+                        <button onclick="this.closest('div').parentElement.remove()" 
+                                style="background: none; border: none; font-size: 24px; cursor: pointer;">×</button>
+                    </div>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <strong>📅 기간:</strong> ${formatDatePeriod(news.start_date, news.end_date)}<br>
+                        <strong>🏭 관련 산업:</strong> ${news.related_industries || '없음'}<br>
+                        <strong>📋 근거자료:</strong> ${news.evidence_source || '없음'}
+                    </div>
+                    
+                    <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin: 1rem 0;">
+                        <h4 style="margin-top: 0;">📝 상세 내용:</h4>
+                        <p style="line-height: 1.6; white-space: pre-wrap;">${news.content}</p>
+                    </div>
+                    
+                    ${news.industry_reason ? `
+                        <div style="background: #e8f5e8; padding: 1.5rem; border-radius: 8px; margin: 1rem 0;">
+                            <h4 style="margin-top: 0;">📊 산업 영향 분석:</h4>
+                            <p style="line-height: 1.6;">${news.industry_reason}</p>
+                        </div>
+                    ` : ''}
+                    
+                    <div style="text-align: center; margin-top: 2rem;">
+                        <button onclick="analyzeNews('${news.id}')" 
+                                style="background: #FF6B6B; color: white; border: none; padding: 0.8rem 2rem; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                            🔍 심층 분석하기
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // 모달 외부 클릭 시 닫기
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+        }
+
+        // 폴백 더미 데이터
+        function getFallbackDummyNews() {
+            return [
+                {
+                    id: "fallback_1",
+                    title: "데이터베이스 연결 실패 - 샘플 데이터",
+                    summary: "Past_news.csv의 실제 데이터를 불러올 수 없어 샘플 데이터를 표시하고 있습니다.",
+                    content: "실제 서비스에서는 SQLite 데이터베이스의 과거 이슈 데이터가 표시됩니다.",
+                    related_industries: "샘플",
+                    industry_reason: "",
+                    start_date: "2024-01-01",
+                    end_date: "",
+                    source: "샘플 데이터",
+                    date: "2024-01-01",
+                    type: "샘플"
+                }
+            ];
+        }
+
+        // 뷰 전환
+        function switchView(view) {
+            currentView = view;
+            document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            displayNews(newsData);
+        }
+
+        // 뉴스 분석
+        function analyzeNews(newsId) {
+            const news = newsData.find(n => n.id === newsId);
+            
+            if (!news) {
+                showNotification('선택한 뉴스를 찾을 수 없습니다.', 'error');
+                return;
+            }
+            
+            console.log(`🔍 과거 이슈 심층 분석 시작: ${news.title}`);
+            showNotification(`🔍 "${news.title}" 심층 분석을 시작합니다...`, 'info');
+            
+            // 분석 페이지로 이동 (향후 구현)
+            const params = new URLSearchParams({
+                news_id: newsId,
+                title: news.title,
+                content: news.content,
+                source: 'past_news_csv',
+                related_industries: news.related_industries || '',
+                industry_reason: news.industry_reason || ''
+            });
+            
+            // 임시로 sector 페이지로 이동
+            setTimeout(() => {
+                window.location.href = '/static/sector.html';
+            }, 1000);
+        }
+
+        // 즐겨찾기
+        function bookmarkNews(newsId) {
+            const news = newsData.find(n => n.id === newsId);
+            
+            if (!news) {
+                showNotification('선택한 뉴스를 찾을 수 없습니다.', 'error');
+                return;
+            }
+            
+            // 로컬 스토리지에 저장
+            try {
+                const bookmarks = JSON.parse(localStorage.getItem('orda_bookmarks') || '[]');
+                if (!bookmarks.includes(newsId)) {
+                    bookmarks.push(newsId);
+                    localStorage.setItem('orda_bookmarks', JSON.stringify(bookmarks));
+                    showNotification(`⭐ "${news.title}"을(를) 즐겨찾기에 추가했습니다!`, 'success');
+                } else {
+                    showNotification('이미 즐겨찾기에 추가된 뉴스입니다.', 'warning');
+                }
+            } catch (e) {
+                showNotification('즐겨찾기 저장에 실패했습니다.', 'error');
+            }
+        }
+
+        // 알림 표시
+        function showNotification(message, type = 'info') {
+            const colors = {
+                success: '#4CAF50',
+                warning: '#ff9800', 
+                error: '#f44336',
+                info: '#2196F3'
+            };
+            
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed; top: 20px; right: 20px; 
+                background: ${colors[type]}; color: white; 
+                padding: 15px 20px; border-radius: 8px; 
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                z-index: 1000; font-weight: 500; max-width: 400px;
+                animation: slideIn 0.3s ease;
+            `;
+            
+            notification.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span>${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" 
+                            style="background: none; border: none; color: white; font-size: 18px; cursor: pointer;">×</button>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 5000);
+        }
+
+        // 페이지 네비게이션
+        function navigateTo(page) {
+            const pages = {
+                'home': '/static/index.html',
+                'news': '/static/news.html', 
+                'sector': '/static/sector.html',
+                'company': '/static/company.html',
+                'mock-invest': '/static/mock-invest.html'
+            };
+            
+            if (page !== 'news') {
+                console.log(`🧭 페이지 이동: ${page}`);
+                window.location.href = pages[page];
+            }
+        }
+
+        // CSS 애니메이션
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            .news-industry {
+                display: inline-block;
+                margin-left: 0.5rem;
+            }
+            .news-item {
+                margin-bottom: 1.5rem;
+                border-bottom: 1px solid #eee;
+                padding-bottom: 1.5rem;
+            }
+            .news-item:last-child {
+                border-bottom: none;
+            }
+            .action-btn {
+                margin-right: 0.5rem;
+                margin-bottom: 0.5rem;
+                padding: 0.4rem 0.8rem;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 0.8rem;
+                transition: all 0.2s;
+            }
+            .btn-analyze {
+                background: #FF6B6B;
+                color: white;
+            }
+            .btn-analyze:hover {
+                background: #ff5252;
+            }
+            .btn-bookmark {
+                background: #FFC107;
+                color: #333;
+            }
+            .btn-bookmark:hover {
+                background: #ffb300;
+            }
+            .btn-secondary {
+                background: #17a2b8;
+                color: white;
+            }
+            .btn-secondary:hover {
+                background: #138496;
+            }
+            .btn-info {
+                background: #6f42c1;
+                color: white;
+            }
+            .btn-info:hover {
+                background: #5a32a3;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // 개발자 도구 디버그 함수들
+        window.debugOrdaNews = {
+            loadNews: loadRealNewsFromDatabase,
+            searchNews: searchNewsInDatabase,
+            filterIndustry: filterByIndustry,
+            currentData: () => newsData,
+            allData: () => allNewsData,
+            testDB: async () => {
+                const response = await fetch('/api/database-stats');
+                return await response.json();
+            },
+            showSample: () => {
+                if (newsData.length > 0) {
+                    console.log("첫 번째 뉴스 샘플:", newsData[0]);
+                }
+            }
+        };
+        
+        console.log('📰 오르다 NEWS 페이지 로드 완료 (Past_news.csv 실제 데이터 연동)');
+        console.log('💡 개발자 도구에서 window.debugOrdaNews로 테스트 가능');
+        console.log('📊 실제 CSV 데이터:', newsData.length > 0 ? `${newsData.length}개 로드됨` : '로딩 중...');
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,346 @@
+#!/usr/bin/env python3
+"""
+BigKinds 크롤러 모듈 - FastAPI 연동용
+기존 스크립트를 클래스 형태로 모듈화
+"""
+
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.action_chains import ActionChains
+import time
+import traceback
+import json
+import asyncio
+from datetime import datetime
+import os
+import glob
+from pathlib import Path
+from typing import List, Dict, Optional
+
+class BigKindsCrawler:
+    """BigKinds 웹사이트 크롤링 클래스"""
+    
+    def __init__(self, data_dir: str = "data2", headless: bool = False):
+        """
+        초기화
+        
+        Args:
+            data_dir: 데이터 저장 폴더
+            headless: 헤드리스 모드 여부 (서버 환경용)
+        """
+        self.data_dir = Path(data_dir)
+        self.data_dir.mkdir(exist_ok=True)
+        self.headless = headless
+        self.driver = None
+        self.wait = None
+        
+    def _setup_driver(self):
+        """Chrome 드라이버 설정"""
+        options = webdriver.ChromeOptions()
+        
+        if self.headless:
+            options.add_argument("--headless")
+            options.add_argument("--no-sandbox")
+            options.add_argument("--disable-dev-shm-usage")
+        else:
+            options.add_argument("--start-maximized")
+            
+        # 추가 안정성 옵션
+        options.add_argument("--disable-blink-features=AutomationControlled")
+        options.add_experimental_option("excludeSwitches", ["enable-automation"])
+        options.add_experimental_option('useAutomationExtension', False)
+        
+        self.driver = webdriver.Chrome(options=options)
+        self.driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+        self.wait = WebDriverWait(self.driver, 10)
+        
+    def _cleanup_driver(self):
+        """드라이버 정리"""
+        if self.driver:
+            try:
+                self.driver.quit()
+            except Exception as e:
+                print(f"⚠️ 드라이버 종료 중 오류: {e}")
+            finally:
+                self.driver = None
+                self.wait = None
+    
+    async def crawl_current_issues(self, max_issues: int = 10) -> Dict:
+        """
+        현재 이슈 크롤링 (비동기)
+        
+        Args:
+            max_issues: 크롤링할 최대 이슈 수
+            
+        Returns:
+            크롤링 결과 딕셔너리
+        """
+        try:
+            print(f"🚀 BigKinds 크롤링 시작 (최대 {max_issues}개 이슈)")
+            
+            # 드라이버 설정
+            self._setup_driver()
+            
+            # 1. 사이트 접속
+            self.driver.get("https://www.bigkinds.or.kr/")
+            await asyncio.sleep(2)
+            
+            # 2. 스크롤 이동
+            await self._scroll_to_issues_section()
+            
+            # 3. 전체 카테고리 클릭
+            await self._click_category_all()
+            
+            # 4. 이슈들 크롤링
+            results = await self._crawl_issues(max_issues)
+            
+            # 5. 결과 저장
+            saved_file = self.save_to_json(results)
+            
+            return {
+                "crawled_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "total_issues": len(results),
+                "source": "bigkinds.or.kr",
+                "category": "전체",
+                "issues": results,
+                "saved_file": saved_file
+            }
+            
+        except Exception as e:
+            print(f"❌ 크롤링 실패: {e}")
+            traceback.print_exc()
+            raise
+        finally:
+            self._cleanup_driver()
+    
+    async def _scroll_to_issues_section(self):
+        """이슈 섹션으로 스크롤"""
+        try:
+            self.driver.execute_script("window.scrollTo(0, 880);")
+            await asyncio.sleep(1)
+            print("✅ 스크롤 이동 완료")
+        except Exception as e:
+            print("❌ 스크롤 이동 실패")
+            raise
+    
+    async def _click_category_all(self):
+        """전체 카테고리 클릭"""
+        try:
+            category_button = self.wait.until(
+                EC.element_to_be_clickable((By.CSS_SELECTOR, 'a.issue-category[data-category="전체"]'))
+            )
+            self.driver.execute_script("arguments[0].click();", category_button)
+            print("✅ 카테고리 클릭 완료")
+            await asyncio.sleep(3)
+        except Exception as e:
+            print("❌ 카테고리 클릭 실패")
+            raise
+    
+    async def _crawl_issues(self, max_issues: int) -> List[Dict]:
+        """개별 이슈들 크롤링"""
+        results = []
+        
+        for i in range(1, max_issues + 1):
+            print(f"▶️ {i}번 이슈 처리 시작")
+            try:
+                # 슬라이드 넘기기 (4번부터)
+                if i >= 3:
+                    await self._navigate_slides(i)
+                
+                # 이슈 클릭 및 데이터 추출
+                issue_data = await self._extract_issue_data(i)
+                if issue_data:
+                    results.append(issue_data)
+                
+                # 팝업 닫기 및 스크롤 복원
+                await self._close_popup_and_restore()
+                
+            except Exception as e:
+                print(f"❌ {i}번 이슈 처리 중 오류 발생: {e}")
+                # 에러가 발생해도 다음 이슈 계속 처리
+                continue
+        
+        return results
+    
+    async def _navigate_slides(self, issue_num: int):
+        """슬라이드 네비게이션"""
+        for _ in range(issue_num - 3):
+            try:
+                next_btn = self.driver.find_element(
+                    By.CSS_SELECTOR, 'div.swiper-button-next.section2-btn.st2-sw1-next'
+                )
+                is_disabled = next_btn.get_attribute('aria-disabled') == 'true'
+                if is_disabled:
+                    break
+                    
+                self.driver.execute_script("arguments[0].click();", next_btn)
+                await asyncio.sleep(0.8)
+            except Exception as e:
+                print(f"⚠️ 슬라이드 넘기기 중 오류: {e}")
+                break
+    
+    async def _extract_issue_data(self, issue_num: int) -> Optional[Dict]:
+        """개별 이슈 데이터 추출"""
+        try:
+            # 이슈 클릭
+            issue_selector = f'div.swiper-slide:nth-child({issue_num}) .issue-item-link'
+            issue_element = self.wait.until(
+                EC.element_to_be_clickable((By.CSS_SELECTOR, issue_selector))
+            )
+            self.driver.execute_script("arguments[0].scrollIntoView(true);", issue_element)
+            self.driver.execute_script("arguments[0].click();", issue_element)
+            
+            # 팝업 내용 추출
+            title_elem = self.wait.until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, 'p.issuPopTitle'))
+            )
+            content_elem = self.wait.until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, 'p.pT20.issuPopContent'))
+            )
+            
+            title = title_elem.text.strip()
+            content = content_elem.text.strip()
+            
+            return {
+                "이슈번호": issue_num,
+                "제목": title,
+                "내용": content,
+                "추출시간": datetime.now().isoformat()
+            }
+            
+        except Exception as e:
+            print(f"❌ 이슈 {issue_num} 데이터 추출 실패: {e}")
+            return None
+    
+    async def _close_popup_and_restore(self):
+        """팝업 닫기 및 화면 복원"""
+        try:
+            # 팝업 닫기
+            ActionChains(self.driver).send_keys(Keys.ESCAPE).perform()
+            await asyncio.sleep(1)
+            
+            # 스크롤 복원
+            self.driver.execute_script("window.scrollTo(0, 880);")
+            await asyncio.sleep(1)
+            
+        except Exception as e:
+            print(f"⚠️ 팝업 닫기 실패: {e}")
+    
+    def save_to_json(self, data: List[Dict]) -> str:
+        """크롤링 결과를 JSON 파일로 저장"""
+        try:
+            timestamp = datetime.now().strftime("%Y.%m.%d_%H.%M.%S")
+            filename = f"{timestamp}_BigKinds_current_issues.json"
+            filepath = self.data_dir / filename
+            
+            save_data = {
+                "crawled_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "total_issues": len(data),
+                "source": "bigkinds.or.kr",
+                "category": "전체",
+                "issues": data
+            }
+            
+            with open(filepath, 'w', encoding='utf-8') as f:
+                json.dump(save_data, f, ensure_ascii=False, indent=2)
+            
+            print(f"✅ JSON 저장 완료: {filepath}")
+            print(f"📊 저장된 이슈 수: {len(data)}개")
+            
+            return str(filepath)
+            
+        except Exception as e:
+            print(f"❌ JSON 저장 실패: {e}")
+            raise
+    
+    def load_latest_issues(self) -> Optional[Dict]:
+        """최신 크롤링 데이터 로드"""
+        try:
+            # data2 폴더에서 최신 JSON 파일 찾기
+            json_files = list(self.data_dir.glob("*_BigKinds_current_issues.json"))
+            
+            if not json_files:
+                print("📂 저장된 크롤링 데이터가 없습니다.")
+                return None
+            
+            # 가장 최신 파일 선택
+            latest_file = max(json_files, key=lambda f: f.stat().st_mtime)
+            
+            with open(latest_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            
+            print(f"✅ 최신 데이터 로드: {latest_file.name}")
+            print(f"📊 이슈 수: {data['total_issues']}개")
+            print(f"🕐 크롤링 시간: {data['crawled_at']}")
+            
+            return data
+            
+        except Exception as e:
+            print(f"❌ 데이터 로드 실패: {e}")
+            return None
+    
+    def load_from_json(self, filepath: str) -> Optional[List[Dict]]:
+        """특정 JSON 파일에서 데이터 로드"""
+        try:
+            with open(filepath, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            
+            print(f"✅ JSON 로드 완료: {filepath}")
+            print(f"📊 로드된 이슈 수: {data['total_issues']}개")
+            
+            return data['issues']
+            
+        except Exception as e:
+            print(f"❌ JSON 로드 실패: {e}")
+            return None
+    
+    async def crawl_and_update(self):
+        """크롤링 + Pinecone 업데이트 (백그라운드 작업용)"""
+        try:
+            # 1. 새로운 이슈 크롤링
+            result = await self.crawl_current_issues()
+            
+            # 2. Pinecone 벡터 업데이트 (옵션)
+            # from .vector_search import VectorSearchEngine
+            # vector_engine = VectorSearchEngine()
+            # await vector_engine.update_current_issues(result['issues'])
+            
+            print("🔄 크롤링 및 벡터 업데이트 완료")
+            return result
+            
+        except Exception as e:
+            print(f"❌ 크롤링 업데이트 실패: {e}")
+            raise
+
+# ===== 테스트 및 직접 실행용 =====
+
+async def main():
+    """테스트용 메인 함수"""
+    crawler = BigKindsCrawler(headless=False)  # GUI 모드로 테스트
+    
+    try:
+        # 크롤링 실행
+        result = await crawler.crawl_current_issues(max_issues=5)  # 테스트용 5개만
+        
+        print("\n" + "="*60)
+        print("📊 크롤링 결과:")
+        for issue in result['issues']:
+            print(f"• {issue['제목']}")
+        
+        # 최신 데이터 로드 테스트
+        print("\n" + "="*60)
+        print("📂 최신 데이터 로드 테스트:")
+        latest = crawler.load_latest_issues()
+        if latest:
+            print(f"✅ 로드 성공: {latest['total_issues']}개 이슈")
+        
+    except Exception as e:
+        print(f"❌ 테스트 실패: {e}")
+
+if __name__ == "__main__":
+    # 직접 실행 시 테스트
+    print("🧪 BigKinds 크롤러 테스트 모드")
+    asyncio.run(main())

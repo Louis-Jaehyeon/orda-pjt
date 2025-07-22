@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오르다 - 오늘의 이슈</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* 사이드바 */
+        .sidebar {
+            width: 260px;
+            background: white;
+            border-right: 1px solid #e9ecef;
+            padding: 0;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+        }
+        
+        .logo-section {
+            background: linear-gradient(135deg, #FF6B6B 0%, #FF5252 100%);
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .logo-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .nav-menu {
+            padding: 1.5rem 0;
+        }
+        
+        .nav-item {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        
+        .nav-item:hover {
+            background-color: #f8f9fa;
+            border-left-color: #FF6B6B;
+        }
+        
+        .nav-item.active {
+            background-color: #fff3f3;
+            border-left-color: #FF6B6B;
+            color: #FF6B6B;
+            font-weight: 600;
+        }
+        
+        .nav-icon {
+            font-size: 1.1rem;
+            width: 20px;
+        }
+        
+        /* 메인 콘텐츠 */
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+        
+        /* 페이지 헤더 */
+        .page-header {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+        
+        .welcome-text {
+            color: #6c757d;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+        
+        .page-subtitle {
+            color: #6c757d;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+        
+        .today-date {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            display: inline-block;
+            margin-top: 1rem;
+            font-weight: 600;
+        }
+        
+        /* 이슈 목록 섹션 */
+        .issues-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+
+        
+        /* 이슈 그리드 */
+        .issues-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .issue-card {
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            background: white;
+            overflow: hidden;
+        }
+        
+        .issue-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+            border-color: #FF6B6B;
+        }
+        
+        .issue-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #FF6B6B, #667eea, #a8e6cf);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .issue-card:hover::before {
+            opacity: 1;
+        }
+        
+        .issue-header {
+            display: flex;
+            justify-content: flex-end;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+        
+        .issue-number {
+            background: #f8f9fa;
+            color: #6c757d;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+
+        
+        .issue-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.8rem;
+            line-height: 1.4;
+            color: #2c3e50;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .issue-content {
+            color: #6c757d;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .issue-footer {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+        
+
+        
+        .analyze-btn {
+            background: linear-gradient(135deg, #FF6B6B 0%, #FF5252 100%);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .analyze-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+        }
+        
+        /* 로딩 상태 */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: #6c757d;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #FF6B6B;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 상태 표시 */
+        .status-bar {
+            background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .status-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: #495057;
+        }
+        
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #28a745;
+        }
+        
+        /* 반응형 */
+        @media (max-width: 1024px) {
+            .issues-grid {
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .layout {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                order: 2;
+            }
+            
+            .main-content {
+                order: 1;
+                padding: 1rem;
+            }
+            
+            .issues-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .page-title {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <!-- 사이드바 -->
+        <div class="sidebar">
+            <div class="logo-section">
+                <div class="logo">오르다</div>
+                <div class="logo-subtitle">투자 학습 플랫폼</div>
+            </div>
+            <div class="nav-menu">
+                <div class="nav-item active" onclick="navigateTo('home')">
+                    <span class="nav-icon">🏠</span>
+                    <span>Home</span>
+                </div>
+                <div class="nav-item" onclick="navigateTo('news')">
+                    <span class="nav-icon">📰</span>
+                    <span>News</span>
+                </div>
+                <div class="nav-item" onclick="navigateTo('sector')">
+                    <span class="nav-icon">🏭</span>
+                    <span>Sector</span>
+                </div>
+                <div class="nav-item" onclick="navigateTo('company')">
+                    <span class="nav-icon">🏢</span>
+                    <span>Company</span>
+                </div>
+                <div class="nav-item" onclick="navigateTo('mock-invest')">
+                    <span class="nav-icon">📈</span>
+                    <span>Mock Invest</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 메인 콘텐츠 -->
+        <div class="main-content">
+            <!-- 페이지 헤더 -->
+            <div class="page-header">
+                <div class="welcome-text">투자 학습의 시작</div>
+                <h1 class="page-title">오늘의 이슈</h1>
+                <p class="page-subtitle">
+                    오늘 주목할 만한 이슈들을 선택하여<br>
+                    과거 유사 사례와 투자 패턴을 학습해보세요
+                </p>
+                <div class="today-date" id="today-date">
+                    2025년 7월 18일 금요일
+                </div>
+            </div>
+            
+            <!-- 상태 표시 -->
+            <div class="status-bar">
+                <div class="status-info">
+                    <div class="status-item">
+                        <div class="status-indicator"></div>
+                        <span>BigKinds 연결됨</span>
+                    </div>
+                    <div class="status-item">
+                        <span>📅 마지막 업데이트: 09:30</span>
+                    </div>
+                    <div class="status-item">
+                        <span>📊 총 10개 이슈</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 이슈 목록 -->
+            <div class="issues-section">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        📰 오늘의 주요 이슈 (10개)
+                    </h2>
+                </div>
+                
+                <div class="issues-grid" id="issues-grid">
+                    <!-- 로딩 상태 -->
+                    <div class="loading" id="loading-state">
+                        <div class="spinner"></div>
+                        <p>오늘의 이슈를 불러오는 중...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- index.html의 JavaScript 부분을 수정 - BigKinds 크롤링 데이터 연동 -->
+
+    <script>
+        // 실제 BigKinds 크롤링 데이터를 저장할 변수
+        let currentIssues = [];
+        let isRefreshing = false;
+        
+        // 더미 이슈 데이터 (API 실패 시 폴백용)
+        const dummyIssues = [
+            {
+                이슈번호: 1,
+                제목: "트럼프, 카타르 공격 이후 이란의 미혼재 대응에 감사 표명",
+                내용: "트럼프 대통령이 이란과의 갈등 상황에서 카타르의 중재 노력에 감사를 표명하며, 중동 지역의 안정화를 위한 외교적 해결책을 모색하고 있다고 밝혔다.",
+                추출시간: new Date().toISOString()
+            },
+            {
+                이슈번호: 2,
+                제목: "나노엠 대표팀, 채워진 지역 당혹 감경 및 민국 의각 표향",
+                내용: "나노기술 관련 기업들의 대표팀이 지역별 기술격차 해소를 위한 새로운 정책 방안을 발표했다.",
+                추출시간: new Date().toISOString()
+            },
+            {
+                이슈번호: 3,
+                제목: "이재명 상목 활정 집맘겁 궁서 무실 환경",
+                내용: "더불어민주당 이재명 대표가 상목 지역 환경정책에 대한 새로운 방향을 제시했다.",
+                추출시간: new Date().toISOString()
+            }
+        ];
+
+        // 페이지 로드 시 실행
+        document.addEventListener('DOMContentLoaded', function() {
+            updateTodayDate();
+            loadCurrentIssues();
+            setupRefreshButton();
+        });
+
+        // 오늘 날짜 업데이트
+        function updateTodayDate() {
+            const today = new Date();
+            const options = { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                weekday: 'long'
+            };
+            const dateString = today.toLocaleDateString('ko-KR', options);
+            const timeString = today.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+            
+            document.getElementById('today-date').textContent = `${dateString} ${timeString}`;
+        }
+
+        // BigKinds API에서 현재 이슈 로드
+        async function loadCurrentIssues() {
+            const grid = document.getElementById('issues-grid');
+            const loading = document.getElementById('loading-state');
+            
+            console.log('🔄 BigKinds API에서 현재 이슈 로딩 중...');
+            
+            try {
+                // 로딩 상태 표시
+                if (loading) {
+                    loading.style.display = 'block';
+                    loading.innerHTML = `
+                        <div style="text-align: center; padding: 2rem;">
+                            <div style="border: 4px solid #f3f3f3; border-top: 4px solid #FF6B6B; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div>
+                            <p>🔍 BigKinds에서 최신 이슈를 가져오는 중...</p>
+                            <small style="color: #666;">크롤링된 데이터 또는 실시간 크롤링 진행</small>
+                        </div>
+                    `;
+                }
+                
+                // 실제 BigKinds API 호출
+                const response = await fetch('/api/today-issues');
+                console.log('📡 Today Issues API 응답 상태:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const result = await response.json();
+                console.log('📊 Today Issues API 응답 데이터:', result);
+                
+                if (result.success && result.data && Array.isArray(result.data)) {
+                    // API 데이터를 화면 표시 형태로 변환
+                    currentIssues = result.data.map((issue, index) => ({
+                        이슈번호: issue.이슈번호 || (index + 1),
+                        제목: issue.제목 || issue.title || `현재 이슈 ${index + 1}`,
+                        내용: issue.내용 || issue.content || '내용을 불러올 수 없습니다.',
+                        추출시간: issue.추출시간 || issue.crawled_at || new Date().toISOString(),
+                        출처: 'BigKinds 실시간'
+                    }));
+                    
+                    console.log(`✅ BigKinds에서 ${currentIssues.length}개 현재 이슈 로드 완료`);
+                    
+                    // 상태 바 업데이트
+                    updateStatusBar(result.metadata);
+                    
+                    // 로딩 숨기고 실제 데이터 표시
+                    if (loading) loading.style.display = 'none';
+                    displayIssues(currentIssues);
+                    
+                    // 성공 알림
+                    showNotification(`✅ BigKinds에서 ${currentIssues.length}개 실시간 이슈를 가져왔습니다!`, 'success');
+                    
+                } else {
+                    throw new Error('BigKinds API 응답 형식이 올바르지 않습니다.');
+                }
+                
+            } catch (error) {
+                console.error('❌ BigKinds API 호출 실패:', error);
+                
+                // 폴백: 더미 데이터 사용
+                currentIssues = [...dummyIssues];
+                if (loading) loading.style.display = 'none';
+                displayIssues(currentIssues);
+                
+                // 에러 알림
+                showNotification('⚠️ 실시간 데이터를 불러올 수 없어 샘플 데이터를 표시합니다.', 'warning');
+                
+                // 상태 바를 오프라인 모드로 업데이트
+                updateStatusBarOffline();
+            }
+        }
+
+        // 새로고침 버튼 설정
+        function setupRefreshButton() {
+            // 새로고침 버튼이 있다면 이벤트 리스너 추가
+            const refreshBtn = document.getElementById('refresh-issues-btn');
+            if (refreshBtn) {
+                refreshBtn.addEventListener('click', refreshCurrentIssues);
+            }
+            
+            // 또는 동적으로 새로고침 버튼 생성
+            const statusBar = document.querySelector('.status-bar');
+            if (statusBar && !document.getElementById('refresh-issues-btn')) {
+                const refreshButton = document.createElement('button');
+                refreshButton.id = 'refresh-issues-btn';
+                refreshButton.innerHTML = '🔄 실시간 새로고침';
+                refreshButton.style.cssText = `
+                    padding: 0.5rem 1rem; 
+                    background: #28a745; 
+                    color: white; 
+                    border: none; 
+                    border-radius: 6px; 
+                    cursor: pointer;
+                    font-size: 0.9rem;
+                    margin-left: 1rem;
+                    transition: all 0.2s;
+                `;
+                refreshButton.addEventListener('click', refreshCurrentIssues);
+                refreshButton.addEventListener('mouseenter', function() {
+                    this.style.background = '#218838';
+                });
+                refreshButton.addEventListener('mouseleave', function() {
+                    this.style.background = '#28a745';
+                });
+                
+                statusBar.appendChild(refreshButton);
+            }
+        }
+
+        // 실시간 새로고침 기능
+        async function refreshCurrentIssues() {
+            if (isRefreshing) {
+                showNotification('⚠️ 이미 새로고침이 진행 중입니다.', 'warning');
+                return;
+            }
+            
+            isRefreshing = true;
+            console.log('🔄 실시간 이슈 새로고침 시작');
+            
+            const refreshBtn = document.getElementById('refresh-issues-btn');
+            const originalText = refreshBtn ? refreshBtn.innerHTML : '';
+            
+            try {
+                // 버튼 상태 변경
+                if (refreshBtn) {
+                    refreshBtn.innerHTML = '⏳ 크롤링 중...';
+                    refreshBtn.disabled = true;
+                    refreshBtn.style.background = '#6c757d';
+                }
+                
+                // 1. 먼저 새로고침 API 호출 (백그라운드 크롤링 시작)
+                console.log('📡 새로고침 API 호출...');
+                const refreshResponse = await fetch('/api/refresh-data', { method: 'POST' });
+                const refreshResult = await refreshResponse.json();
+                
+                if (refreshResult.success) {
+                    showNotification('🔄 백그라운드에서 새로운 크롤링을 시작했습니다...', 'info');
+                    
+                    // 2. 잠시 대기 후 새로운 데이터 확인
+                    setTimeout(async () => {
+                        console.log('📊 새로운 데이터 확인 중...');
+                        await loadCurrentIssues();
+                        
+                        // 버튼 복원
+                        if (refreshBtn) {
+                            refreshBtn.innerHTML = originalText;
+                            refreshBtn.disabled = false;
+                            refreshBtn.style.background = '#28a745';
+                        }
+                        
+                        isRefreshing = false;
+                        showNotification('✅ 실시간 이슈 업데이트 완료!', 'success');
+                    }, 5000); // 5초 후 확인
+                    
+                } else {
+                    throw new Error('새로고침 API 호출 실패');
+                }
+                
+            } catch (error) {
+                console.error('❌ 실시간 새로고침 실패:', error);
+                
+                // 버튼 복원
+                if (refreshBtn) {
+                    refreshBtn.innerHTML = originalText;
+                    refreshBtn.disabled = false;
+                    refreshBtn.style.background = '#28a745';
+                }
+                
+                isRefreshing = false;
+                showNotification('❌ 실시간 새로고침에 실패했습니다. 잠시 후 다시 시도해주세요.', 'error');
+            }
+        }
+
+        // 상태 바 업데이트
+        function updateStatusBar(metadata) {
+            const statusInfo = document.querySelector('.status-info');
+            if (statusInfo && metadata) {
+                const crawledTime = formatTime(metadata.crawled_at);
+                const isSaved = metadata.saved_to_db ? '💾 DB 저장됨' : '';
+                
+                statusInfo.innerHTML = `
+                    <div class="status-item">
+                        <div class="status-indicator" style="background: #28a745; animation: pulse 2s infinite;"></div>
+                        <span>BigKinds 연결됨</span>
+                    </div>
+                    <div class="status-item">
+                        <span>📅 마지막 업데이트: ${crawledTime}</span>
+                    </div>
+                    <div class="status-item">
+                        <span>📊 총 ${metadata.total_issues || currentIssues.length}개 이슈</span>
+                    </div>
+                    <div class="status-item">
+                        <span>🌐 출처: ${metadata.source || 'BigKinds'}</span>
+                    </div>
+                    ${isSaved ? `<div class="status-item"><span>${isSaved}</span></div>` : ''}
+                `;
+            }
+        }
+
+        // 오프라인 상태 바 업데이트
+        function updateStatusBarOffline() {
+            const statusInfo = document.querySelector('.status-info');
+            if (statusInfo) {
+                statusInfo.innerHTML = `
+                    <div class="status-item">
+                        <div class="status-indicator" style="background: #ffc107;"></div>
+                        <span>오프라인 모드</span>
+                    </div>
+                    <div class="status-item">
+                        <span>📅 샘플 데이터 표시 중</span>
+                    </div>
+                    <div class="status-item">
+                        <span>📊 총 ${currentIssues.length}개 샘플 이슈</span>
+                    </div>
+                    <div class="status-item">
+                        <button onclick="loadCurrentIssues()" style="background: #007bff; color: white; border: none; padding: 0.3rem 0.8rem; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">🔄 재연결 시도</button>
+                    </div>
+                `;
+            }
+        }
+
+        // 시간 포맷팅
+        function formatTime(timeString) {
+            if (!timeString) return new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+            
+            try {
+                const date = new Date(timeString);
+                return date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+            } catch (e) {
+                return timeString;
+            }
+        }
+
+        // 이슈 표시
+        function displayIssues(issues) {
+            const grid = document.getElementById('issues-grid');
+            if (!grid) return;
+            
+            grid.innerHTML = '';
+
+            issues.forEach((issue, index) => {
+                const issueCard = document.createElement('div');
+                issueCard.className = 'issue-card';
+                
+                // 크롤링 시간 표시
+                const timeInfo = issue.추출시간 ? formatCrawlTime(issue.추출시간) : '';
+                
+                issueCard.innerHTML = `
+                    <div class="issue-header">
+                        <div class="issue-number">#${issue.이슈번호}</div>
+                        ${timeInfo ? `<div class="issue-time" style="font-size: 0.7rem; color: #666;">${timeInfo}</div>` : ''}
+                    </div>
+                    <div class="issue-title">${issue.제목}</div>
+                    <div class="issue-content">${issue.내용}</div>
+                    <div class="issue-footer">
+                        <button class="analyze-btn" onclick="analyzeIssue(${issue.이슈번호}, '${escapeQuotes(issue.제목)}')">
+                            🔍 분석하기
+                        </button>
+                        <button class="bookmark-btn" onclick="bookmarkIssue(${issue.이슈번호})" style="background: #ffc107; color: #333; margin-left: 0.5rem;">
+                            ⭐ 저장
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(issueCard);
+            });
+            
+            console.log(`🎨 ${issues.length}개 이슈 카드 렌더링 완료`);
+        }
+
+        // 크롤링 시간 포맷팅
+        function formatCrawlTime(timeString) {
+            try {
+                const date = new Date(timeString);
+                const now = new Date();
+                const diffMinutes = Math.floor((now - date) / (1000 * 60));
+                
+                if (diffMinutes < 1) return '방금 전';
+                if (diffMinutes < 60) return `${diffMinutes}분 전`;
+                if (diffMinutes < 1440) return `${Math.floor(diffMinutes / 60)}시간 전`;
+                return date.toLocaleDateString('ko-KR');
+            } catch (e) {
+                return '';
+            }
+        }
+
+        // 따옴표 이스케이프
+        function escapeQuotes(str) {
+            return str.replace(/'/g, "\\'").replace(/"/g, '\\"');
+        }
+
+        // 이슈 즐겨찾기
+        function bookmarkIssue(issueNumber) {
+            const issue = currentIssues.find(i => i.이슈번호 === issueNumber);
+            
+            if (!issue) {
+                showNotification('⚠️ 선택한 이슈를 찾을 수 없습니다.', 'error');
+                return;
+            }
+            
+            try {
+                const bookmarks = JSON.parse(localStorage.getItem('orda_current_bookmarks') || '[]');
+                const bookmark = {
+                    id: `current_${issueNumber}`,
+                    title: issue.제목,
+                    content: issue.내용,
+                    crawled_at: issue.추출시간,
+                    saved_at: new Date().toISOString()
+                };
+                
+                const existingIndex = bookmarks.findIndex(b => b.id === bookmark.id);
+                if (existingIndex === -1) {
+                    bookmarks.push(bookmark);
+                    localStorage.setItem('orda_current_bookmarks', JSON.stringify(bookmarks));
+                    showNotification(`⭐ "${issue.제목}"을(를) 즐겨찾기에 추가했습니다!`, 'success');
+                } else {
+                    showNotification('이미 즐겨찾기에 추가된 이슈입니다.', 'warning');
+                }
+            } catch (e) {
+                showNotification('즐겨찾기 저장에 실패했습니다.', 'error');
+            }
+        }
+
+        // 알림 표시
+        function showNotification(message, type = 'info') {
+            const colors = {
+                success: '#4CAF50',
+                warning: '#ff9800', 
+                error: '#f44336',
+                info: '#2196F3'
+            };
+            
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed; 
+                top: 20px; 
+                right: 20px; 
+                background: ${colors[type] || colors.info}; 
+                color: white; 
+                padding: 15px 20px; 
+                border-radius: 8px; 
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                z-index: 1000;
+                font-weight: 500;
+                max-width: 400px;
+                animation: slideIn 0.3s ease;
+            `;
+            
+            notification.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span>${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" 
+                            style="background: none; border: none; color: white; font-size: 18px; cursor: pointer;">×</button>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // 5초 후 자동 제거
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 5000);
+        }
+
+        // 이슈 분석 시작
+        function analyzeIssue(issueId, title) {
+            console.log(`🔍 현재 이슈 분석 시작: ${issueId} - ${title}`);
+            
+            // 분석할 이슈 찾기
+            const issue = currentIssues.find(i => i.이슈번호 === issueId);
+            
+            if (!issue) {
+                showNotification('⚠️ 선택한 이슈를 찾을 수 없습니다.', 'error');
+                return;
+            }
+            
+            // 분석 시작 알림
+            showNotification(`🔍 "${title}" 이슈 분석을 시작합니다...`, 'info');
+            
+            // 분석 페이지로 이동 (URL 파라미터와 함께)
+            const params = new URLSearchParams({
+                issue_id: issueId,
+                title: title,
+                content: issue.내용,
+                source: 'bigkinds_current',
+                crawled_at: issue.추출시간
+            });
+            
+            // 실제 분석 페이지로 이동 (향후 구현 예정)
+            // window.location.href = `analyze.html?${params.toString()}`;
+            
+            // 임시로 뉴스 페이지로 이동
+            setTimeout(() => {
+                window.location.href = '/static/news.html';
+            }, 1000);
+        }
+
+        // 페이지 네비게이션
+        function navigateTo(page) {
+            const pages = {
+                'home': '/static/index.html',
+                'news': '/static/news.html', 
+                'sector': '/static/sector.html',
+                'company': '/static/company.html',
+                'mock-invest': '/static/mock-invest.html'
+            };
+            
+            if (page !== 'home') {
+                console.log(`🧭 페이지 이동: ${page}`);
+                window.location.href = pages[page];
+            }
+        }
+
+        // CSS 애니메이션 추가
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+            
+            @keyframes pulse {
+                0% { opacity: 1; }
+                50% { opacity: 0.5; }
+                100% { opacity: 1; }
+            }
+            
+            .status-indicator {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                display: inline-block;
+                margin-right: 0.5rem;
+            }
+            
+            .issue-card {
+                transition: all 0.2s ease;
+            }
+            
+            .issue-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            }
+            
+            .analyze-btn, .bookmark-btn {
+                transition: all 0.2s ease;
+            }
+            
+            .analyze-btn:hover {
+                background: #ff5252 !important;
+            }
+            
+            .bookmark-btn:hover {
+                background: #ffb300 !important;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // 개발자 도구에서 수동 테스트용 함수들
+        window.debugOrdaAPI = {
+            loadIssues: loadCurrentIssues,
+            refreshIssues: refreshCurrentIssues,
+            currentIssues: () => currentIssues,
+            testAPI: async () => {
+                const response = await fetch('/api/health');
+                return await response.json();
+            },
+            testTodayIssues: async () => {
+                const response = await fetch('/api/today-issues');
+                return await response.json();
+            }
+        };
+        
+        console.log('🎯 오르다 HOME 페이지 로드 완료 (BigKinds 크롤링 연동)');
+        console.log('💡 개발자 도구에서 window.debugOrdaAPI로 테스트 가능');
+</script>
+</body>
+</html>

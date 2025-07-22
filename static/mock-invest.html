@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오르다 - Mock Investment</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* 사이드바 */
+        .sidebar {
+            width: 260px;
+            background: white;
+            border-right: 1px solid #e9ecef;
+            padding: 0;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+        }
+        
+        .logo-section {
+            background: linear-gradient(135deg, #FF6B6B 0%, #FF5252 100%);
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .logo-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .nav-menu {
+            padding: 1.5rem 0;
+        }
+        
+        .nav-item {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        
+        .nav-item:hover {
+            background-color: #f8f9fa;
+            border-left-color: #FF6B6B;
+        }
+        
+        .nav-item.active {
+            background-color: #fff3f3;
+            border-left-color: #FF6B6B;
+            color: #FF6B6B;
+            font-weight: 600;
+        }
+        
+        .nav-icon {
+            font-size: 1.1rem;
+            width: 20px;
+        }
+        
+        /* 메인 콘텐츠 */
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+        
+        /* 페이지 헤더 */
+        .page-header {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+        
+        .breadcrumb {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .page-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        
+        .page-subtitle {
+            color: #6c757d;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+        
+        /* 시뮬레이션 단계 */
+        .simulation-steps {
+            display: flex;
+            justify-content: center;
+            margin: 2rem 0;
+            gap: 1rem;
+        }
+        
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .step.active {
+            background: linear-gradient(135deg, #FF6B6B 0%, #FF5252 100%);
+            color: white;
+        }
+        
+        .step.completed {
+            background: #28a745;
+            color: white;
+        }
+        
+        .step.inactive {
+            background: #f8f9fa;
+            color: #6c757d;
+        }
+        
+        /* 시나리오 선택 */
+        .scenario-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .scenarios-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .scenario-card {
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .scenario-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            border-color: #FF6B6B;
+        }
+        
+        .scenario-card.selected {
+            border-color: #FF6B6B;
+            background: #fff3f3;
+        }
+        
+        .scenario-date {
+            background: #f8f9fa;
+            color: #495057;
+            padding: 0.4rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+        
+        .scenario-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.8rem;
+        }
+        
+        .scenario-description {
+            color: #6c757d;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+        
+        .scenario-impacts {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .impact-tag {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        /* 투자 설정 */
+        .investment-setup {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: none;
+        }
+        
+        .setup-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .setup-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+        
+        .setup-label {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .amount-slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #e9ecef;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        .amount-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #FF6B6B;
+            cursor: pointer;
+        }
+        
+        .amount-display {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #FF6B6B;
+            text-align: center;
+        }
+        
+        .period-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .period-btn {
+            padding: 0.8rem 1.2rem;
+            border: 2px solid #e9ecef;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            text-align: center;
+        }
+        
+        .period-btn:hover {
+            border-color: #FF6B6B;
+        }
+        
+        .period-btn.selected {
+            background: #FF6B6B;
+            color: white;
+            border-color: #FF6B6B;
+        }
+        
+        /* 종목 선택 */
+        .stock-selection {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: none;
+        }
+        
+        .industry-sections {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .industry-section {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+        
+        .industry-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .industry-name {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1.1rem;
+        }
+        
+        .industry-allocation {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        .stocks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .stock-item {
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        
+        .stock-item:hover {
+            border-color: #FF6B6B;
+        }
+        
+        .stock-item.selected {
+            border-color: #FF6B6B;
+            background: #fff3f3;
+        }
+        
+        .stock-checkbox {
+            width: 18px;
+            height: 18px;
+        }
+        
+        .stock-info {
+            flex: 1;
+        }
+        
+        .stock-name {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.2rem;
+        }
+        
+        .stock-code {
+            color: #6c757d;
+            font-size: 0.8rem;
+        }
+        
+        .allocation-input {
+            width: 80px;
+            padding: 0.4rem;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        /* 시뮬레이션 실행 */
+        .simulation-run {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: none;
+        }
+        
+        .progress-section {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: #e9ecef;
+            border-radius: 6px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #FF6B6B, #667eea);
+            border-radius: 6px;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .simulation-chart {
+            height: 300px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .chart-placeholder {
+            color: #6c757d;
+            font-size: 1.1rem;
+        }
+        
+        .timeline-events {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .timeline-event {
+            display: flex;
+            gap: 1rem;
+            padding: 0.8rem;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 4px solid #FF6B6B;
+        }
+        
+        .event-date {
+            font-weight: 600;
+            color: #495057;
+            min-width: 80px;
+        }
+        
+        .event-text {
+            color: #6c757d;
+            line-height: 1.4;
+        }
+        
+        /* 결과 분석 */
+        .results-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: none;
+        }
+        
+        .results-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .result-card {
+            text-align: center;
+            padding: 1.5rem;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+        }
+        
+        .result-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .result-value.positive {
+            color: #dc3545;
+        }
+        
+        .result-value.negative {
+            color: #007bff;
+        }
+        
+        .result-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        .stocks-performance {
+            margin-bottom: 2rem;
+        }
+        
+        .performance-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        
+        .performance-table th,
+        .performance-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .performance-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .learning-points {
+            background: #e3f2fd;
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+        
+        .learning-title {
+            font-weight: 600;
+            color: #1976d2;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .learning-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+        
+        .learning-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+            line-height: 1.6;
+        }
+        
+        /* 액션 버튼 */
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+        
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #FF6B6B 0%, #FF5252 100%);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #495057;
+            border: 2px solid #e9ecef;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .layout {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                order: 2;
+            }
+            
+            .main-content {
+                order: 1;
+                padding: 1rem;
+            }
+            
+            .simulation-steps {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .scenarios-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .setup-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .results-summary {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <!-- 사이드바 -->
+        <div class="sidebar">
+            <div class="logo-section">
+                <div class="logo">오르다</div>
+                <div class="logo-subtitle">투자 학습 플랫폼</div>
+            </div>
+            <div class="nav-menu">
+                <div class="nav-item" onclick="navigateTo('home')">
+                    <span class="nav-icon">🏠</span>
+                    <span>Home</span>
+                </div>
+                <div class="nav-item" onclick="navigateTo('news')">
+                    <span class="nav-icon">📰</span>
+                    <span>News</span>
+                </div>
+                <div class="nav-item" onclick="navigateTo('sector')">
+                    <span class="nav-icon">🏭</span>
+                    <span>Sector</span>
+                </div>
+                <div class="nav-item" onclick="navigateTo('company')">
+                    <span class="nav-icon">🏢</span>
+                    <span>Company</span>
+                </div>
+                <div class="nav-item active" onclick="navigateTo('mock-invest')">
+                    <span class="nav-icon">📈</span>
+                    <span>Mock Invest</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 메인 콘텐츠 -->
+        <div class="main-content">
+            <!-- 페이지 헤더 -->
+            <div class="page-header">
+                <div class="breadcrumb">Home → Mock Invest</div>
+                <h1 class="page-title">📈 모의투자 시뮬레이션</h1>
+                <p class="page-subtitle">
+                    과거 이슈 시점으로 돌아가 "만약 그때 투자했다면?"을 체험해보세요
+                </p>
+            </div>
+            
+            <!-- 시뮬레이션 단계 -->
+            <div class="simulation-steps">
+                <div class="step active" id="step-1">
+                    <span>1️⃣</span>
+                    <span>시나리오 선택</span>
+                </div>
+                <div class="step inactive" id="step-2">
+                    <span>2️⃣</span>
+                    <span>투자 설정</span>
+                </div>
+                <div class="step inactive" id="step-3">
+                    <span>3️⃣</span>
+                    <span>종목 선택</span>
+                </div>
+                <div class="step inactive" id="step-4">
+                    <span>4️⃣</span>
+                    <span>시뮬레이션</span>
+                </div>
+                <div class="step inactive" id="step-5">
+                    <span>5️⃣</span>
+                    <span>결과 분석</span>
+                </div>
+            </div>
+            
+            <!-- 1단계: 시나리오 선택 -->
+            <div class="scenario-section" id="scenario-section">
+                <h2 class="section-title">
+                    🎯 과거 이슈 시나리오 선택
+                </h2>
+                <div class="scenarios-grid" id="scenarios-container">
+                    <!-- 시나리오 카드들이 여기에 동적으로 추가됩니다 -->
+                </div>
+            </div>
+            
+            <!-- 2단계: 투자 설정 -->
+            <div class="investment-setup" id="investment-setup">
+                <h2 class="section-title">
+                    💰 투자 조건 설정
+                </h2>
+                <div class="setup-row">
+                    <div class="setup-item">
+                        <label class="setup-label">투자 금액</label>
+                        <input type="range" class="amount-slider" id="amount-slider" 
+                               min="100000" max="10000000" step="100000" value="1000000">
+                        <div class="amount-display" id="amount-display">1,000,000원</div>
+                    </div>
+                    <div class="setup-item">
+                        <label class="setup-label">투자 기간</label>
+                        <div class="period-buttons">
+                            <button class="period-btn selected" data-period="1">1개월</button>
+                            <button class="period-btn" data-period="3">3개월</button>
+                            <button class="period-btn" data-period="6">6개월</button>
+                            <button class="period-btn" data-period="12">1년</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 3단계: 종목 선택 -->
+            <div class="stock-selection" id="stock-selection">
+                <h2 class="section-title">
+                    📊 포트폴리오 구성
+                </h2>
+                <div class="industry-sections" id="industry-sections">
+                    <!-- 산업별 종목들이 여기에 동적으로 추가됩니다 -->
+                </div>
+            </div>
+            
+            <!-- 4단계: 시뮬레이션 실행 -->
+            <div class="simulation-run" id="simulation-run">
+                <h2 class="section-title">
+                    ⚡ 시뮬레이션 실행 중
+                </h2>
+                <div class="progress-section">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                    <div id="progress-text">시뮬레이션 준비 중...</div>
+                </div>
+                <div class="simulation-chart" id="simulation-chart">
+                    <div class="chart-placeholder">포트폴리오 변화 차트가 여기에 표시됩니다</div>
+                </div>
+                <div class="timeline-events" id="timeline-events">
+                    <!-- 타임라인 이벤트들이 여기에 동적으로 추가됩니다 -->
+                </div>
+            </div>
+            
+            <!-- 5단계: 결과 분석 -->
+            <div class="results-section" id="results-section">
+                <h2 class="section-title">
+                    🎉 시뮬레이션 결과
+                </h2>
+                <div class="results-summary">
+                    <div class="result-card">
+                        <div class="result-value positive" id="total-return">+15.3%</div>
+                        <div class="result-label">총 수익률</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-value positive" id="profit-amount">+153,000원</div>
+                        <div class="result-label">수익 금액</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-value" id="final-amount">1,153,000원</div>
+                        <div class="result-label">최종 금액</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-value positive" id="market-vs">+7.2%p</div>
+                        <div class="result-label">시장 대비</div>
+                    </div>
+                </div>
+                
+                <div class="stocks-performance">
+                    <h3>종목별 성과 분석</h3>
+                    <table class="performance-table">
+                        <thead>
+                            <tr>
+                                <th>종목명</th>
+                                <th>투자금액</th>
+                                <th>수익률</th>
+                                <th>수익금액</th>
+                            </tr>
+                        </thead>
+                        <tbody id="performance-table-body">
+                            <!-- 종목별 성과가 여기에 동적으로 추가됩니다 -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="learning-points">
+                    <div class="learning-title">
+                        💡 이번 시뮬레이션에서 배운 점
+                    </div>
+                    <ul class="learning-list" id="learning-list">
+                        <!-- 학습 포인트들이 여기에 동적으로 추가됩니다 -->
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- 액션 버튼 -->
+            <div class="action-buttons">
+                <button class="btn btn-secondary" onclick="resetSimulation()">🔄 다시 시작</button>
+                <button class="btn btn-primary" id="next-btn" onclick="nextStep()" disabled>
+                    다음 단계
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 시뮬레이션 상태
+        let currentStep = 1;
+        let selectedScenario = null;
+        let investmentAmount = 1000000;
+        let investmentPeriod = 1;
+        let selectedStocks = [];
+        let simulationResults = null;
+
+        // 시나리오 데이터 (DB의 과거 이슈 Table 기반)
+        const scenarios = [
+            {
+                id: 'PN_001',
+                date: '2021.01',
+                title: '미국 정권 교체와 초대형 부양책 발표',
+                description: '바이든 행정부 출범과 함께 1.9조 달러 구제법안과 2.7조 달러 인프라 투자 법안이 발표되어 글로벌 시장에 큰 영향을 미쳤습니다.',
+                impacts: ['건설', '화학', '금속', '친환경']
+            },
+            {
+                id: 'PN_002',
+                date: '2021.02',
+                title: '글로벌 금리 상승과 기술주 조정',
+                description: '미국 10년물 국채 금리가 1.7%를 돌파하며 고평가된 성장주들이 큰 조정을 받았던 시기입니다.',
+                impacts: ['IT 서비스', '제약', '바이오']
+            },
+            {
+                id: 'PN_003',
+                date: '2021.03',
+                title: '탄소중립 및 신재생에너지 정책 확대',
+                description: '한국 정부의 2050 탄소중립 선언과 구체적 이행 로드맵 발표로 친환경 산업에 대한 투자가 급증했습니다.',
+                impacts: ['전기전자', '화학', '운송장비']
+            },
+            {
+                id: 'PN_004',
+                date: '2021.07',
+                title: '코로나19 재확산과 델타·오미크론 등장',
+                description: '변이 바이러스 출현으로 리오프닝 기대가 약화되며 비대면 산업이 재조명받았던 시기입니다.',
+                impacts: ['운송·창고', '의료·정밀기기', 'IT 서비스']
+            },
+            {
+                id: 'PN_005',
+                date: '2020.01',
+                title: '이란 솔레이마니 제거 사건',
+                description: '미군의 이란 쿠드스 부대 사령관 제거로 중동 긴장이 극도로 고조되어 유가 급등과 방산주 강세가 나타났습니다.',
+                impacts: ['정유', '방위산업', '금융']
+            },
+            {
+                id: 'PN_006',
+                date: '2019.07',
+                title: '일본 반도체 소재 수출 규제',
+                description: '일본의 반도체 핵심 소재 수출 규제로 국내 반도체 업계가 큰 타격을 받았지만, 이후 대체재 개발로 반전에 성공했습니다.',
+                impacts: ['반도체', '화학', 'IT 서비스']
+            }
+        ];
+
+        // 산업별 종목 데이터
+        const stocksByIndustry = {
+            '정유': [
+                { code: '010950', name: 'S-OIL', allocation: 0 },
+                { code: '078930', name: 'GS', allocation: 0 },
+                { code: '096770', name: 'SK이노베이션', allocation: 0 }
+            ],
+            '방위산업': [
+                { code: '047810', name: '한국항공우주', allocation: 0 },
+                { code: '079550', name: 'LIG넥스원', allocation: 0 },
+                { code: '012450', name: '한화시스템', allocation: 0 }
+            ],
+            '반도체': [
+                { code: '005930', name: '삼성전자', allocation: 0 },
+                { code: '000660', name: 'SK하이닉스', allocation: 0 },
+                { code: '042700', name: '한미반도체', allocation: 0 }
+            ],
+            'IT 서비스': [
+                { code: '035720', name: '카카오', allocation: 0 },
+                { code: '035420', name: '네이버', allocation: 0 },
+                { code: '053800', name: '안랩', allocation: 0 }
+            ],
+            '화학': [
+                { code: '051910', name: 'LG화학', allocation: 0 },
+                { code: '096770', name: 'SK이노베이션', allocation: 0 },
+                { code: '000270', name: '기아', allocation: 0 }
+            ],
+            '의료·정밀기기': [
+                { code: '145020', name: '휴젤', allocation: 0 },
+                { code: '196170', name: '알테오젠', allocation: 0 },
+                { code: '182400', name: '엔케이맥스', allocation: 0 }
+            ]
+        };
+
+        // 페이지 로드 시 실행
+        document.addEventListener('DOMContentLoaded', function() {
+            displayScenarios();
+            setupEventListeners();
+        });
+
+        // 이벤트 리스너 설정
+        function setupEventListeners() {
+            // 투자 금액 슬라이더
+            const amountSlider = document.getElementById('amount-slider');
+            amountSlider.addEventListener('input', function() {
+                investmentAmount = parseInt(this.value);
+                document.getElementById('amount-display').textContent = 
+                    investmentAmount.toLocaleString() + '원';
+            });
+
+            // 투자 기간 버튼
+            document.querySelectorAll('.period-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('selected'));
+                    this.classList.add('selected');
+                    investmentPeriod = parseInt(this.dataset.period);
+                });
+            });
+        }
+
+        // 시나리오 표시
+        function displayScenarios() {
+            const container = document.getElementById('scenarios-container');
+            container.innerHTML = '';
+
+            scenarios.forEach(scenario => {
+                const card = document.createElement('div');
+                card.className = 'scenario-card';
+                card.onclick = () => selectScenario(scenario.id);
+                
+                card.innerHTML = `
+                    <div class="scenario-date">${scenario.date}</div>
+                    <div class="scenario-title">${scenario.title}</div>
+                    <div class="scenario-description">${scenario.description}</div>
+                    <div class="scenario-impacts">
+                        ${scenario.impacts.map(impact => 
+                            `<span class="impact-tag">${impact}</span>`
+                        ).join('')}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // 시나리오 선택
+        function selectScenario(scenarioId) {
+            selectedScenario = scenarioId;
+            
+            // 선택된 카드 하이라이트
+            document.querySelectorAll('.scenario-card').forEach(card => card.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+            
+            // 다음 버튼 활성화
+            document.getElementById('next-btn').disabled = false;
+        }
+
+        // 다음 단계로 이동
+        function nextStep() {
+            if (currentStep < 5) {
+                currentStep++;
+                updateSteps();
+                showCurrentStep();
+                
+                if (currentStep === 4) {
+                    runSimulation();
+                }
+            }
+        }
+
+        // 단계 업데이트
+        function updateSteps() {
+            for (let i = 1; i <= 5; i++) {
+                const step = document.getElementById(`step-${i}`);
+                if (i < currentStep) {
+                    step.className = 'step completed';
+                } else if (i === currentStep) {
+                    step.className = 'step active';
+                } else {
+                    step.className = 'step inactive';
+                }
+            }
+        }
+
+        // 현재 단계 표시
+        function showCurrentStep() {
+            // 모든 섹션 숨기기
+            document.getElementById('scenario-section').style.display = 'none';
+            document.getElementById('investment-setup').style.display = 'none';
+            document.getElementById('stock-selection').style.display = 'none';
+            document.getElementById('simulation-run').style.display = 'none';
+            document.getElementById('results-section').style.display = 'none';
+
+            // 현재 단계 섹션 표시
+            switch(currentStep) {
+                case 1:
+                    document.getElementById('scenario-section').style.display = 'block';
+                    document.getElementById('next-btn').textContent = '다음 단계';
+                    document.getElementById('next-btn').disabled = !selectedScenario;
+                    break;
+                case 2:
+                    document.getElementById('investment-setup').style.display = 'block';
+                    document.getElementById('next-btn').textContent = '다음 단계';
+                    document.getElementById('next-btn').disabled = false;
+                    break;
+                case 3:
+                    document.getElementById('stock-selection').style.display = 'block';
+                    displayStockSelection();
+                    document.getElementById('next-btn').textContent = '시뮬레이션 시작';
+                    document.getElementById('next-btn').disabled = selectedStocks.length === 0;
+                    break;
+                case 4:
+                    document.getElementById('simulation-run').style.display = 'block';
+                    document.getElementById('next-btn').style.display = 'none';
+                    break;
+                case 5:
+                    document.getElementById('results-section').style.display = 'block';
+                    displayResults();
+                    document.getElementById('next-btn').style.display = 'none';
+                    break;
+            }
+        }
+
+        // 종목 선택 표시
+        function displayStockSelection() {
+            const scenario = scenarios.find(s => s.id === selectedScenario);
+            const container = document.getElementById('industry-sections');
+            container.innerHTML = '';
+
+            scenario.impacts.forEach(industry => {
+                if (stocksByIndustry[industry]) {
+                    const section = document.createElement('div');
+                    section.className = 'industry-section';
+                    
+                    section.innerHTML = `
+                        <div class="industry-header">
+                            <div class="industry-name">${industry}</div>
+                            <div class="industry-allocation">추천 비중: 30-40%</div>
+                        </div>
+                        <div class="stocks-grid">
+                            ${stocksByIndustry[industry].map(stock => `
+                                <div class="stock-item" onclick="toggleStock('${stock.code}', '${stock.name}', '${industry}')">
+                                    <input type="checkbox" class="stock-checkbox" id="stock-${stock.code}">
+                                    <div class="stock-info">
+                                        <div class="stock-name">${stock.name}</div>
+                                        <div class="stock-code">${stock.code}</div>
+                                    </div>
+                                    <input type="number" class="allocation-input" 
+                                           placeholder="%" min="0" max="100" 
+                                           onchange="updateAllocation('${stock.code}', this.value)">
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                    container.appendChild(section);
+                }
+            });
+        }
+
+        // 종목 선택/해제
+        function toggleStock(code, name, industry) {
+            const checkbox = document.getElementById(`stock-${code}`);
+            const stockItem = checkbox.closest('.stock-item');
+            
+            if (checkbox.checked) {
+                checkbox.checked = false;
+                stockItem.classList.remove('selected');
+                selectedStocks = selectedStocks.filter(s => s.code !== code);
+            } else {
+                checkbox.checked = true;
+                stockItem.classList.add('selected');
+                selectedStocks.push({ code, name, industry, allocation: 20 });
+            }
+            
+            // 다음 버튼 상태 업데이트
+            document.getElementById('next-btn').disabled = selectedStocks.length === 0;
+        }
+
+        // 배분 비율 업데이트
+        function updateAllocation(code, value) {
+            const stock = selectedStocks.find(s => s.code === code);
+            if (stock) {
+                stock.allocation = parseInt(value) || 0;
+            }
+        }
+
+        // 시뮬레이션 실행
+        function runSimulation() {
+            let progress = 0;
+            const progressFill = document.getElementById('progress-fill');
+            const progressText = document.getElementById('progress-text');
+            const timelineEvents = document.getElementById('timeline-events');
+            
+            const events = [
+                { date: '1일차', text: '포트폴리오 구성 완료, 투자 시작' },
+                { date: '1주차', text: '초기 시장 반응: 정유주 상승세 시작' },
+                { date: '2주차', text: '국제 유가 급등, 관련 종목 강세 지속' },
+                { date: '1개월', text: '방산주 급등, 포트폴리오 수익률 10% 돌파' },
+                { date: '2개월', text: '시장 변동성 확대, 일부 차익실현 매물 출현' },
+                { date: '3개월', text: '시뮬레이션 완료: 최종 수익률 +15.3%' }
+            ];
+            
+            const interval = setInterval(() => {
+                progress += 20;
+                progressFill.style.width = progress + '%';
+                
+                if (progress <= 100) {
+                    const eventIndex = Math.floor(progress / 20) - 1;
+                    if (eventIndex >= 0 && eventIndex < events.length) {
+                        progressText.textContent = events[eventIndex].text;
+                        
+                        // 타임라인 이벤트 추가
+                        const eventElement = document.createElement('div');
+                        eventElement.className = 'timeline-event';
+                        eventElement.innerHTML = `
+                            <div class="event-date">${events[eventIndex].date}</div>
+                            <div class="event-text">${events[eventIndex].text}</div>
+                        `;
+                        timelineEvents.appendChild(eventElement);
+                    }
+                }
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        nextStep(); // 결과 단계로 이동
+                    }, 2000);
+                }
+            }, 1000);
+        }
+
+        // 결과 표시
+        function displayResults() {
+            // 시뮬레이션 결과 계산 (더미 데이터)
+            const totalReturn = 15.3;
+            const profitAmount = Math.floor(investmentAmount * totalReturn / 100);
+            const finalAmount = investmentAmount + profitAmount;
+            
+            // 결과 업데이트
+            document.getElementById('total-return').textContent = `+${totalReturn}%`;
+            document.getElementById('profit-amount').textContent = `+${profitAmount.toLocaleString()}원`;
+            document.getElementById('final-amount').textContent = `${finalAmount.toLocaleString()}원`;
+            document.getElementById('market-vs').textContent = '+7.2%p';
+            
+            // 종목별 성과 표시
+            const tableBody = document.getElementById('performance-table-body');
+            const stockPerformances = [
+                { name: 'S-OIL', amount: 300000, return: 23.5, profit: 70500 },
+                { name: '한국항공우주', amount: 500000, return: 18.2, profit: 91000 },
+                { name: '삼성전자', amount: 200000, return: 8.7, profit: 17400 }
+            ];
+            
+            tableBody.innerHTML = stockPerformances.map(stock => `
+                <tr>
+                    <td>${stock.name}</td>
+                    <td>${stock.amount.toLocaleString()}원</td>
+                    <td class="result-value positive">+${stock.return}%</td>
+                    <td>+${stock.profit.toLocaleString()}원</td>
+                </tr>
+            `).join('');
+            
+            // 학습 포인트 표시
+            const learningList = document.getElementById('learning-list');
+            const learningPoints = [
+                '✅ 지정학적 리스크 시 유가 상승 수혜 섹터에 집중 투자하여 높은 수익 달성',
+                '✅ 방산주는 초기 급등 후 조정 패턴을 보였지만 전체적으로 양호한 성과',
+                '⚠️ 시장 전체 하락 리스크를 간과했으나 섹터 선택으로 위험 상쇄',
+                '💡 이벤트 영향이 예상보다 오래 지속되어 장기 보유가 유리했음'
+            ];
+            
+            learningList.innerHTML = learningPoints.map(point => `
+                <li class="learning-item">
+                    <span>${point}</span>
+                </li>
+            `).join('');
+        }
+
+        // 시뮬레이션 리셋
+        function resetSimulation() {
+            currentStep = 1;
+            selectedScenario = null;
+            selectedStocks = [];
+            
+            updateSteps();
+            showCurrentStep();
+            
+            // 버튼 상태 리셋
+            document.getElementById('next-btn').style.display = 'block';
+            document.getElementById('next-btn').disabled = true;
+            
+            // 카드 선택 해제
+            document.querySelectorAll('.scenario-card').forEach(card => card.classList.remove('selected'));
+        }
+
+        // 페이지 네비게이션
+        function navigateTo(page) {
+            const pages = {
+                'home': '/static/index.html',
+                'news': '/static/news.html', 
+                'sector': '/static/sector.html',
+                'company': '/static/company.html',
+                'mock-invest': '/static/mock-invest.html'
+            };
+            
+            if (page !== 'mock-invest') {
+                window.location.href = pages[page];
+            }
+        }
+    </script>
+</body>
+</html>
