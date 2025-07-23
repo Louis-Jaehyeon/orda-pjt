@@ -847,39 +847,76 @@
         }
 
         // 이슈 분석 시작
+       // 이슈 분석 시작
         function analyzeIssue(issueId, title) {
             console.log(`🔍 현재 이슈 분석 시작: ${issueId} - ${title}`);
-            
-            // 분석할 이슈 찾기
+
             const issue = currentIssues.find(i => i.이슈번호 === issueId);
-            
+
             if (!issue) {
                 showNotification('⚠️ 선택한 이슈를 찾을 수 없습니다.', 'error');
                 return;
             }
-            
-            // 분석 시작 알림
+
             showNotification(`🔍 "${title}" 이슈 분석을 시작합니다...`, 'info');
-            
-            // 분석 페이지로 이동 (URL 파라미터와 함께)
-            const params = new URLSearchParams({
-                issue_id: issueId,
-                title: title,
-                content: issue.내용,
-                source: 'bigkinds_current',
-                crawled_at: issue.추출시간
-            });
-            
-            // 실제 분석 페이지로 이동 (향후 구현 예정)
-            // window.location.href = `analyze.html?${params.toString()}`;
-            
-            // 임시로 뉴스 페이지로 이동
-            setTimeout(() => {
-                window.location.href = '/static/news.html';
-            }, 1000);
+            showAnalysisModal(issue);  // ✅ 실제 모달 열기
         }
 
-        // 페이지 네비게이션
+        
+// 모달 열기 함수
+function showAnalysisModal(issue) {
+    const modal = document.getElementById('analysis-modal');
+    document.getElementById('modal-title').textContent = issue.제목;
+    document.getElementById('modal-content').textContent = issue.내용;
+
+    const industryMap = {
+        1: [{ name: '방위산업', reason: '중동 전쟁 가능성과 군수주 확대 기대 때문입니다.' }],
+        2: [{ name: '반도체 장비', reason: '나노 기술 발표가 반도체 공정 혁신과 연결되기 때문입니다.' }],
+        3: [{ name: '환경플랜트', reason: '상목 지역의 친환경 정책 확대에 따라 관련 업종 주목' }]
+    };
+
+    const pastIssueMap = {
+        1: [{ title: '2020년 이란-미국 무력충돌', reason: '중동 갈등이 방산주 상승을 이끌었습니다.' }],
+        2: [{ title: '2019년 반도체 미세공정 기술 발표', reason: '기술 발표 후 관련 장비 기업 주가 상승' }],
+        3: [{ title: '2021년 탄소중립 선언', reason: '환경정책 확대 발표가 환경산업 주가에 긍정적 영향' }]
+    };
+
+    const industryList = document.getElementById('modal-industries');
+    industryList.innerHTML = '';
+    (industryMap[issue.이슈번호] || []).forEach(ind => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+            <strong>${ind.name}</strong>
+            <div style="margin-top:4px; background:#f8f9fa; padding:8px 12px; border-radius:8px; color:#333; font-size:0.9rem;">
+                ${ind.reason}
+            </div>
+        `;
+        industryList.appendChild(li);
+    });
+
+    const pastList = document.getElementById('modal-past-issues');
+    pastList.innerHTML = '';
+    (pastIssueMap[issue.이슈번호] || []).forEach(past => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+            <strong>${past.title}</strong>
+            <div style="margin-top:4px; background:#f1f3f5; padding:8px 12px; border-radius:8px; color:#333; font-size:0.9rem;">
+                ${past.reason}
+            </div>
+        `;
+        pastList.appendChild(li);
+    });
+
+    modal.style.display = 'flex';
+}
+
+function closeAnalysisModal() {
+    const modal = document.getElementById('analysis-modal');
+    modal.style.display = 'none';
+}
+
+
+// 페이지 네비게이션
         function navigateTo(page) {
             const pages = {
                 'home': '/static/index.html',
@@ -963,5 +1000,21 @@
         console.log('🎯 오르다 HOME 페이지 로드 완료 (BigKinds 크롤링 연동)');
         console.log('💡 개발자 도구에서 window.debugOrdaAPI로 테스트 가능');
 </script>
+
+<!-- 분석 모달 -->
+<div id="analysis-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000; justify-content:center; align-items:center;">
+  <div style="background:white; padding:2rem; border-radius:12px; max-width:800px; width:90%; max-height:90%; overflow-y:auto; position:relative;">
+    <button onclick="closeAnalysisModal()" style="position:absolute; top:10px; right:15px; font-size:18px; background:none; border:none; cursor:pointer;">✖</button>
+    <h2 style="margin-bottom:1rem;" id="modal-title">이슈 제목</h2>
+    <p style="color:#555; margin-bottom:1.5rem;" id="modal-content">이슈 내용</p>
+
+    <h3>📌 관련 산업</h3>
+    <ul id="modal-industries" style="margin-bottom:1.5rem;"></ul>
+
+    <h3>📚 과거 유사 이슈</h3>
+    <ul id="modal-past-issues"></ul>
+  </div>
+</div>
+
 </body>
 </html>

@@ -23,7 +23,7 @@ from typing import List, Dict, Optional
 class BigKindsCrawler:
     """BigKinds 웹사이트 크롤링 클래스"""
     
-    def __init__(self, data_dir: str = "data2", headless: bool = False):
+    def __init__(self, data_dir: str = "data", headless: bool = False):
         """
         초기화
         
